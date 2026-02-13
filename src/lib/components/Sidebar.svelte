@@ -22,10 +22,21 @@
 	<nav class="h-12 border-b border-base-300 flex items-center justify-between px-5 shrink-0">
 		<div class="flex items-center gap-1">
 			<a href="/" class="mr-3" title="Moonshine">
-				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-					<rect x="7" y="3" width="10" height="2.5" rx="0.75" fill="currentColor" class="text-primary"/>
-					<path d="M8 5.5H16V8C17.2 9 18 10.5 18 12.5V17.5C18 19.43 16.43 21 14.5 21H9.5C7.57 21 6 19.43 6 17.5V12.5C6 10.5 6.8 9 8 8V5.5Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round" class="text-primary"/>
-					<path d="M13 10A3 3 0 1 0 13 16A4 4 0 0 1 13 10Z" fill="currentColor" class="text-primary"/>
+				<svg width="24" height="24" viewBox="0 0 200 200" fill="none">
+					<defs>
+						<linearGradient id="liqH" x1="100" y1="180" x2="100" y2="80" gradientUnits="userSpaceOnUse">
+							<stop offset="0%" stop-color="#C4D4E0" stop-opacity="0.3"/>
+							<stop offset="100%" stop-color="#C4D4E0" stop-opacity="0.05"/>
+						</linearGradient>
+					</defs>
+					<path d="M68 40 H132 V52 H68 Z" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
+					<path d="M72 52 V60 C72 65, 65 70, 65 80 V160 A 20 20 0 0 0 85 180 H115 A 20 20 0 0 0 135 160 V80 C135 70, 128 65, 128 60 V52" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
+					<path d="M72 60 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
+					<path d="M72 68 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
+					<path d="M68 115 Q 100 120, 132 115 V 160 A 17 17 0 0 1 115 177 H 85 A 17 17 0 0 1 68 160 Z" fill="url(#liqH)" stroke="none"/>
+					<path d="M100 70 A 22 22 0 1 1 88 110 A 18 18 0 1 0 100 70 Z" fill="#E2E8F0"/>
+					<path d="M130 85 V 105" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+					<path d="M70 160 V 170" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
 				</svg>
 			</a>
 
@@ -82,10 +93,21 @@
 	<nav class="w-14 h-screen border-r border-base-300 flex flex-col items-center justify-between py-5 shrink-0">
 		<div class="flex flex-col items-center gap-1">
 			<a href="/" class="mb-4" title="Moonshine">
-				<svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-					<rect x="7" y="3" width="10" height="2.5" rx="0.75" fill="currentColor" class="text-primary"/>
-					<path d="M8 5.5H16V8C17.2 9 18 10.5 18 12.5V17.5C18 19.43 16.43 21 14.5 21H9.5C7.57 21 6 19.43 6 17.5V12.5C6 10.5 6.8 9 8 8V5.5Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round" class="text-primary"/>
-					<path d="M13 10A3 3 0 1 0 13 16A4 4 0 0 1 13 10Z" fill="currentColor" class="text-primary"/>
+				<svg width="28" height="28" viewBox="0 0 200 200" fill="none">
+					<defs>
+						<linearGradient id="liqV" x1="100" y1="180" x2="100" y2="80" gradientUnits="userSpaceOnUse">
+							<stop offset="0%" stop-color="#C4D4E0" stop-opacity="0.3"/>
+							<stop offset="100%" stop-color="#C4D4E0" stop-opacity="0.05"/>
+						</linearGradient>
+					</defs>
+					<path d="M68 40 H132 V52 H68 Z" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
+					<path d="M72 52 V60 C72 65, 65 70, 65 80 V160 A 20 20 0 0 0 85 180 H115 A 20 20 0 0 0 135 160 V80 C135 70, 128 65, 128 60 V52" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
+					<path d="M72 60 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
+					<path d="M72 68 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
+					<path d="M68 115 Q 100 120, 132 115 V 160 A 17 17 0 0 1 115 177 H 85 A 17 17 0 0 1 68 160 Z" fill="url(#liqV)" stroke="none"/>
+					<path d="M100 70 A 22 22 0 1 1 88 110 A 18 18 0 1 0 100 70 Z" fill="#E2E8F0"/>
+					<path d="M130 85 V 105" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
+					<path d="M70 160 V 170" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
 				</svg>
 			</a>
 
