@@ -1,0 +1,17 @@
+import { invoke } from '@tauri-apps/api/core';
+
+export function getSetting(key: string): Promise<string | null> {
+	return invoke<string | null>('get_setting', { key });
+}
+
+export function setSetting(key: string, value: string): Promise<void> {
+	return invoke('set_setting', { key, value });
+}
+
+export function getAllSettings(): Promise<[string, string][]> {
+	return invoke<[string, string][]>('get_all_settings');
+}
+
+export function switchEmbeddingProvider(provider: string): Promise<number> {
+	return invoke<number>('switch_embedding_provider', { provider });
+}

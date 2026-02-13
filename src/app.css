@@ -1,0 +1,76 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "pitch";
+  default: true;
+  color-scheme: dark;
+
+  /* pure black base */
+  --color-base-100: oklch(0% 0 0);
+  --color-base-200: oklch(0% 0 0);
+  --color-base-300: oklch(18% 0.005 230);
+
+  /* cool off-white text */
+  --color-base-content: oklch(90% 0.01 230);
+
+  /* moonshine silver */
+  --color-primary: oklch(86% 0.02 230);
+  --color-primary-content: oklch(10% 0.01 230);
+
+  /* muted steel */
+  --color-secondary: oklch(60% 0.03 230);
+  --color-secondary-content: oklch(95% 0.005 230);
+
+  /* deep steel */
+  --color-accent: oklch(50% 0.04 240);
+  --color-accent-content: oklch(92% 0.01 240);
+
+  --color-neutral: oklch(16% 0.005 230);
+  --color-neutral-content: oklch(80% 0.01 230);
+
+  /* note types — warm palette */
+  --color-info: oklch(62% 0.12 240);
+  --color-info-content: oklch(95% 0.01 240);
+
+  --color-success: oklch(65% 0.14 155);
+  --color-success-content: oklch(95% 0.01 155);
+
+  --color-warning: oklch(78% 0.15 75);
+  --color-warning-content: oklch(12% 0.03 75);
+
+  --color-error: oklch(55% 0.18 20);
+  --color-error-content: oklch(95% 0.01 20);
+}
+
+/* sharp font rendering */
+body {
+  font-family: 'Nanum Myeongjo', serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* cool scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(25% 0.01 230);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(35% 0.02 230);
+}
+
+/* range slider fill */
+input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    oklch(86% 0.02 230) var(--range-fill),
+    oklch(18% 0.005 230) var(--range-fill)
+  );
+}
