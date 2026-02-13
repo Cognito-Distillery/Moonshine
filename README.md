@@ -140,7 +140,31 @@ AI          OpenAI · Gemini (embeddings + relationship extraction)
 
 ---
 
-## Getting Started
+## Install
+
+Download the latest release for your platform:
+
+**[GitHub Releases](https://github.com/Cognito-Distillery/moonshine/releases/latest)**
+
+| Platform | File |
+|----------|------|
+| **Linux** | `.AppImage` / `.deb` |
+| **macOS** | `.dmg` |
+| **Windows** | `.msi` / `.exe` |
+
+### Data Location
+
+All data is stored in a single SQLite file:
+
+| Platform | Path |
+|----------|------|
+| **Linux** | `~/.local/share/com.moonshine.app/moonshine.db` |
+| **macOS** | `~/Library/Application Support/com.moonshine.app/moonshine.db` |
+| **Windows** | `C:\Users\{user}\AppData\Roaming\com.moonshine.app\moonshine.db` |
+
+---
+
+## Development
 
 ### Prerequisites
 
@@ -148,15 +172,8 @@ AI          OpenAI · Gemini (embeddings + relationship extraction)
 - [Rust toolchain](https://rustup.rs)
 - [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/)
 
-### Install
-
 ```bash
 bun install
-```
-
-### Develop
-
-```bash
 bun run tauri dev
 ```
 

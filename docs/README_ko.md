@@ -140,7 +140,31 @@ AI          OpenAI · Gemini (임베딩 + 관계 추출)
 
 ---
 
-## 시작하기
+## 설치
+
+플랫폼에 맞는 최신 릴리스를 다운로드하세요:
+
+**[GitHub Releases](https://github.com/Cognito-Distillery/moonshine/releases/latest)**
+
+| 플랫폼 | 파일 |
+|--------|------|
+| **Linux** | `.AppImage` / `.deb` |
+| **macOS** | `.dmg` |
+| **Windows** | `.msi` / `.exe` |
+
+### 데이터 저장 위치
+
+모든 데이터는 단일 SQLite 파일에 저장됩니다:
+
+| 플랫폼 | 경로 |
+|--------|------|
+| **Linux** | `~/.local/share/com.moonshine.app/moonshine.db` |
+| **macOS** | `~/Library/Application Support/com.moonshine.app/moonshine.db` |
+| **Windows** | `C:\Users\{user}\AppData\Roaming\com.moonshine.app\moonshine.db` |
+
+---
+
+## 개발
 
 ### 사전 요구사항
 
@@ -148,15 +172,8 @@ AI          OpenAI · Gemini (임베딩 + 관계 추출)
 - [Rust 툴체인](https://rustup.rs)
 - [Tauri 2 사전 요구사항](https://v2.tauri.app/start/prerequisites/)
 
-### 설치
-
 ```bash
 bun install
-```
-
-### 개발
-
-```bash
 bun run tauri dev
 ```
 
