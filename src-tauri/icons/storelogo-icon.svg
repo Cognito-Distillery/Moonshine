@@ -1,0 +1,20 @@
+<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="50" height="50" rx="10" fill="#111111"/>
+  <rect width="50" height="50" rx="10" fill="url(#bg)"/>
+  <defs>
+    <linearGradient id="bg" x1="25" y1="0" x2="25" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Lid -->
+  <rect x="17" y="8" width="16" height="4" rx="1" stroke="#C4D4E0" stroke-width="2" fill="none"/>
+  <!-- Jar body simplified -->
+  <path d="M19 12 V15 C19 17, 16 18, 16 20 V38 A 4 4 0 0 0 20 42 H30 A 4 4 0 0 0 34 38 V20 C34 18, 31 17, 31 15 V12" stroke="#C4D4E0" stroke-width="2" fill="rgba(196,212,224,0.1)"/>
+  <!-- Moon -->
+  <path d="M28 20 A 6 6 0 1 1 25 29 A 4.5 4.5 0 1 0 28 20 Z" fill="#E2E8F0" filter="url(#glow)"/>
+</svg>
