@@ -22,8 +22,8 @@
 ## 기술 스택
 
 ```
-프론트엔드    Svelte 5 · SvelteKit · TypeScript · Tailwind CSS 4 · DaisyUI 5
-백엔드       Rust · SQLite (FTS5) · reqwest · Cytoscape.js
+프론트엔드    Svelte 5 · SvelteKit · TypeScript · Tailwind CSS 4 · DaisyUI 5 · Cytoscape.js
+백엔드       Rust · SQLite (FTS5) · reqwest
 데스크톱     Tauri 2
 AI          OpenAI · Gemini (임베딩 + 관계 추출)
 ```
@@ -79,7 +79,7 @@ GitHub에 Linux, macOS, Windows 빌드가 포함된 드래프트 릴리스가 �
 
 ```
 src/
-├── routes/              # 페이지 (매싱, 매시 턴, 스틸, 찬장, 설정, 도움말)
+├── routes/              # 페이지 (매싱, 매시 턴, 스틸, 찬장, 설정, 도움말, 플로팅 메모)
 ├── lib/
 │   ├── commands/        # Tauri IPC 래퍼
 │   ├── components/      # Svelte 컴포넌트
@@ -90,7 +90,7 @@ src/
 │   └── utils/           # 유틸리티 함수
 src-tauri/
 ├── src/
-│   ├── ai/              # 임베딩 생성 (OpenAI, Gemini)
+│   ├── ai/              # 임베딩 생성 & 관계 추출 (OpenAI, Gemini)
 │   ├── commands/        # Tauri IPC 커맨드 핸들러
 │   ├── db/              # SQLite 데이터베이스 (매시, 엣지, 설정, 검색 캐시)
 │   ├── pipeline/        # 자동 증류 파이프라인 & 스케줄러

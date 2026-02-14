@@ -22,8 +22,8 @@ An API key from **at least one** of the following AI providers is required:
 ## Tech Stack
 
 ```
-Frontend    Svelte 5 · SvelteKit · TypeScript · Tailwind CSS 4 · DaisyUI 5
-Backend     Rust · SQLite (FTS5) · reqwest · Cytoscape.js
+Frontend    Svelte 5 · SvelteKit · TypeScript · Tailwind CSS 4 · DaisyUI 5 · Cytoscape.js
+Backend     Rust · SQLite (FTS5) · reqwest
 Desktop     Tauri 2
 AI          OpenAI · Gemini (embeddings + relationship extraction)
 ```
@@ -79,7 +79,7 @@ A draft release will be created on GitHub with builds for Linux, macOS, and Wind
 
 ```
 src/
-├── routes/              # Pages (mashing, mashes, still, jar-shelf, settings, help)
+├── routes/              # Pages (mashing, mashes, still, jar-shelf, settings, help, floating-memo)
 ├── lib/
 │   ├── commands/        # Tauri IPC wrappers
 │   ├── components/      # Svelte components
@@ -90,7 +90,7 @@ src/
 │   └── utils/           # Utility functions
 src-tauri/
 ├── src/
-│   ├── ai/              # Embedding generation (OpenAI, Gemini)
+│   ├── ai/              # Embedding generation & relationship extraction (OpenAI, Gemini)
 │   ├── commands/        # Tauri IPC command handlers
 │   ├── db/              # SQLite database (mashes, edges, settings, search cache)
 │   ├── pipeline/        # Auto-distillation pipeline & scheduler
