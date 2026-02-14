@@ -51,6 +51,7 @@ export async function addMash(data: {
 }) {
 	try {
 		await cmd.addMash(data.type, data.summary, data.context, data.memo);
+		await loadMashes(MashStatus.MASH_TUN);
 	} catch (e) {
 		showToast(String(e));
 		throw e;

@@ -2297,7 +2297,7 @@ dependencies = [
 
 [[package]]
 name = "moonshine"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "bcrypt",
  "env_logger",

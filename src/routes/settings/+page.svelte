@@ -72,6 +72,14 @@
 	let chatModelCustom = $state(false);
 	let modelSwitching = $state(false);
 
+	// Confirmation dialogs for re-embed/re-extract
+	let reembedConfirmOpen = $state(false);
+	let reembedPendingAction = $state<(() => Promise<void>) | null>(null);
+	let reextractConfirmOpen = $state(false);
+	let reextractRunning = $state(false);
+
+
+
 	// API Key
 	let apiKey = $state('');
 	let apiKeySaving = $state(false);
@@ -90,6 +98,11 @@
 	// Pipeline
 	let pipelineInterval = $state(30);
 	let pipelineStatus = $state<PipelineStatus | null>(null);
+	let progressPhase = $derived(pipelineStatus?.progress?.phase ?? null);
+	let progressStep = $derived(pipelineStatus?.progress?.step ?? null);
+	let progressCurrent = $derived(pipelineStatus?.progress?.current ?? 0);
+	let progressTotal = $derived(pipelineStatus?.progress?.total ?? 0);
+	let progressPercent = $derived(progressTotal > 0 ? Math.round((progressCurrent / progressTotal) * 100) : 0);
 	let pipelineRunning = $state(false);
 	let pipelineWarningOpen = $state(false);
 
@@ -97,7 +110,6 @@
 	let pipelineThreshold = $state(0.3);
 	let pipelineTopK = $state(5);
 	let similaritySaving = $state(false);
-	let similarityWarningOpen = $state(false);
 
 	let apiKeySettingName = $derived(
 		embeddingProvider === 'gemini' ? 'gemini_api_key' : 'openai_api_key'
@@ -108,6 +120,22 @@
 	);
 
 	let intervalPercent = $derived(((pipelineInterval - 5) / (60 - 5)) * 100);
+
+	// Poll pipeline status while running (every 3s)
+	let pollTimer: ReturnType<typeof setInterval> | null = null;
+	function startPolling() {
+		if (pollTimer) return;
+		pollTimer = setInterval(async () => {
+			try {
+				const status = await pipelineCmd.getPipelineStatus();
+				pipelineStatus = status;
+				if (!status.running) stopPolling();
+			} catch { /* ignore */ }
+		}, 500);
+	}
+	function stopPolling() {
+		if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+	}
 
 	onMount(() => {
 		const previewTimer = setInterval(() => { previewNow = Date.now(); }, 1000);
@@ -124,7 +152,9 @@
 			embeddingProvider = providerVal || 'openai';
 			pipelineStatus = statusVal;
 			pipelineInterval = statusVal.intervalMin;
-			pipelineRunning = statusVal.running;
+
+			// Start polling if pipeline is already running
+			if (statusVal.running) startPolling();
 
 			// Load similarity settings
 			if (pThresholdVal) pipelineThreshold = parseFloat(pThresholdVal);
@@ -159,17 +189,25 @@
 			checkForUpdates();
 		})();
 
-		return () => clearInterval(previewTimer);
+		return () => {
+			clearInterval(previewTimer);
+			stopPolling();
+		};
 	});
 
-	async function handleSwitchProvider(provider: string) {
+	function handleSwitchProvider(provider: string) {
 		if (provider === embeddingProvider) return;
+		reembedPendingAction = () => doSwitchProvider(provider);
+		reembedConfirmOpen = true;
+	}
+
+	async function doSwitchProvider(provider: string) {
 		providerSwitching = true;
+		startPolling();
 		try {
 			const resetCount = await settingsCmd.switchEmbeddingProvider(provider);
 			embeddingProvider = provider;
 
-			// Reset models to defaults for the new provider
 			embeddingModel = defaultEmbeddingModels[provider];
 			chatModel = defaultChatModels[provider];
 			embeddingModelCustom = false;
@@ -177,7 +215,6 @@
 			customEmbeddingModel = '';
 			customChatModel = '';
 
-			// Load the API key for the new provider
 			const keyName = provider === 'gemini' ? 'gemini_api_key' : 'openai_api_key';
 			const keyVal = await settingsCmd.getSetting(keyName);
 			apiKey = keyVal || '';
@@ -189,6 +226,7 @@
 			} else {
 				showToast(t('common.saved'), 'success');
 			}
+			pipelineStatus = await pipelineCmd.getPipelineStatus();
 		} catch (e) {
 			showToast(String(e));
 		} finally {
@@ -196,9 +234,15 @@
 		}
 	}
 
-	async function handleSwitchEmbeddingModel(model: string) {
+	function handleSwitchEmbeddingModel(model: string) {
 		if (model === embeddingModel) return;
+		reembedPendingAction = () => doSwitchEmbeddingModel(model);
+		reembedConfirmOpen = true;
+	}
+
+	async function doSwitchEmbeddingModel(model: string) {
 		modelSwitching = true;
+		startPolling();
 		try {
 			const resetCount = await settingsCmd.switchEmbeddingModel(model);
 			embeddingModel = model;
@@ -207,10 +251,38 @@
 			} else {
 				showToast(t('common.saved'), 'success');
 			}
+			pipelineStatus = await pipelineCmd.getPipelineStatus();
 		} catch (e) {
 			showToast(String(e));
 		} finally {
 			modelSwitching = false;
+		}
+	}
+
+	async function handleConfirmReembed() {
+		reembedConfirmOpen = false;
+		if (reembedPendingAction) {
+			await reembedPendingAction();
+			reembedPendingAction = null;
+		}
+	}
+
+	async function handleReextract() {
+		reextractConfirmOpen = true;
+	}
+
+	async function handleConfirmReextract() {
+		reextractConfirmOpen = false;
+		reextractRunning = true;
+		startPolling();
+		try {
+			const count = await settingsCmd.reextractRelationships();
+			pipelineStatus = await pipelineCmd.getPipelineStatus();
+			showToast(t('settings.reextractDone').replace('{count}', String(count)), 'success');
+		} catch (e) {
+			showToast(String(e));
+		} finally {
+			reextractRunning = false;
 		}
 	}
 
@@ -287,6 +359,7 @@
 
 	async function handleTriggerPipeline() {
 		pipelineRunning = true;
+		startPolling();
 		try {
 			await pipelineCmd.triggerPipeline();
 			pipelineStatus = await pipelineCmd.getPipelineStatus();
@@ -556,6 +629,114 @@
 		</div>
 	</section>
 
+	<!-- Pipeline -->
+	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
+		<div class="flex items-center justify-between">
+			<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.pipeline')}</h2>
+			<button
+				class="btn btn-ghost btn-xs btn-circle text-warning"
+				aria-label={t('settings.pipelineWarningTitle')}
+				onclick={() => (pipelineWarningOpen = true)}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+				</svg>
+			</button>
+		</div>
+		<p class="text-xs text-base-content/35">{t('settings.pipelineDesc')}</p>
+
+		<div class="flex items-center gap-3">
+			<span class="text-sm">{t('settings.pipelineInterval')}</span>
+			<input
+				type="range"
+				min="5"
+				max="60"
+				step="5"
+				class="range range-sm range-primary flex-1"
+				style="--range-fill: {intervalPercent}%;"
+				bind:value={pipelineInterval}
+				onchange={handleSetInterval}
+			/>
+			<span class="text-sm font-mono w-8 text-right">{pipelineInterval}</span>
+		</div>
+
+		<button
+			class="btn btn-sm btn-outline"
+			onclick={handleTriggerPipeline}
+			disabled={pipelineRunning || pipelineStatus?.running || reextractRunning || providerSwitching || modelSwitching}
+		>
+			{#if pipelineRunning}
+				<span class="loading loading-spinner loading-xs"></span>
+				{t('settings.pipelineRunning')}
+			{:else}
+				{t('settings.pipelineTrigger')}
+			{/if}
+		</button>
+
+		{#if pipelineStatus}
+			<div class="text-xs text-base-content/50 space-y-1">
+				<div>{t('settings.pipelineLastRun')}: {formatPipelineTime(pipelineStatus.lastRun)}</div>
+				<div class="flex gap-4 flex-wrap">
+					<span>{t('settings.onStill')}: {pipelineStatus.onStillCount}</span>
+					<span>{t('settings.distilled')}: {pipelineStatus.distilledCount}</span>
+					<span>{t('settings.jarred')}: {pipelineStatus.jarredCount}</span>
+					</div>
+			</div>
+		{/if}
+
+		<div class="flex items-center gap-3">
+			<div class="flex flex-col gap-0.5 flex-1">
+				<span class="text-sm font-medium">{t('settings.pipelineThreshold')}</span>
+				<span class="text-xs text-base-content/35">{t('settings.pipelineThresholdDesc')}</span>
+			</div>
+			<input
+				type="number"
+				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
+				step="0.05"
+				min="0.1"
+				max="0.9"
+				bind:value={pipelineThreshold}
+			/>
+			<button
+				class="btn btn-sm btn-primary"
+				onclick={() => handleSaveSimilarity('pipeline_threshold', String(pipelineThreshold))}
+				disabled={similaritySaving}
+			>
+				{t('common.save')}
+			</button>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<div class="flex flex-col gap-0.5 flex-1">
+				<span class="text-sm font-medium">{t('settings.pipelineTopK')}</span>
+				<span class="text-xs text-base-content/35">{t('settings.pipelineTopKDesc')}</span>
+			</div>
+			<input
+				type="number"
+				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
+				step="1"
+				min="1"
+				max="20"
+				bind:value={pipelineTopK}
+			/>
+			<button
+				class="btn btn-sm btn-primary"
+				onclick={() => handleSaveSimilarity('pipeline_top_k', String(pipelineTopK))}
+				disabled={similaritySaving}
+			>
+				{t('common.save')}
+			</button>
+		</div>
+
+		<button
+			class="btn btn-sm btn-outline btn-ghost"
+			onclick={handleResetSimilarityDefaults}
+			disabled={similaritySaving}
+		>
+			{t('settings.resetDefaults')}
+		</button>
+	</section>
+
 	<!-- AI Provider -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5 relative">
 		<div class="flex items-center justify-between">
@@ -675,6 +856,20 @@
 					</button>
 				</div>
 			{/if}
+
+			{#if progressPhase === 're_embed'}
+				{@const msgKey = progressStep === 'saving' ? 'settings.progressReEmbedSaving' : 'settings.progressReEmbedApi'}
+				<div class="flex flex-col gap-1.5">
+					<div class="flex items-center gap-2 text-xs text-info">
+						<span class="loading loading-spinner loading-xs"></span>
+						<span>{t(msgKey)}</span>
+						<span class="ml-auto tabular-nums">{progressPercent}%</span>
+					</div>
+					{#if progressTotal > 0}
+						<progress class="progress progress-info w-full" value={progressCurrent} max={progressTotal}></progress>
+					{/if}
+				</div>
+			{/if}
 		</div>
 
 		<!-- Chat Model -->
@@ -722,130 +917,35 @@
 				</div>
 			{/if}
 		</div>
-	</section>
-
-	<!-- Pipeline -->
-	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
-		<div class="flex items-center justify-between">
-			<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.pipeline')}</h2>
-			<button
-				class="btn btn-ghost btn-xs btn-circle text-warning"
-				aria-label={t('settings.pipelineWarningTitle')}
-				onclick={() => (pipelineWarningOpen = true)}
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
-					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-				</svg>
-			</button>
-		</div>
-		<p class="text-xs text-base-content/35">{t('settings.pipelineDesc')}</p>
-
-		<div class="flex items-center gap-3">
-			<span class="text-sm">{t('settings.pipelineInterval')}</span>
-			<input
-				type="range"
-				min="5"
-				max="60"
-				step="5"
-				class="range range-sm range-primary flex-1"
-				style="--range-fill: {intervalPercent}%;"
-				bind:value={pipelineInterval}
-				onchange={handleSetInterval}
-			/>
-			<span class="text-sm font-mono w-8 text-right">{pipelineInterval}</span>
-		</div>
 
 		<button
-			class="btn btn-sm btn-outline"
-			onclick={handleTriggerPipeline}
-			disabled={pipelineRunning}
+			class="btn btn-sm btn-outline btn-warning"
+			onclick={handleReextract}
+			disabled={reextractRunning || pipelineRunning || pipelineStatus?.running}
 		>
-			{#if pipelineRunning}
+			{#if reextractRunning}
 				<span class="loading loading-spinner loading-xs"></span>
-				{t('settings.pipelineRunning')}
+				{t('settings.reextractRunning')}
 			{:else}
-				{t('settings.pipelineTrigger')}
+				{t('settings.reextractBtn')}
 			{/if}
 		</button>
 
-		{#if pipelineStatus}
-			<div class="text-xs text-base-content/50 space-y-1">
-				<div>{t('settings.pipelineLastRun')}: {formatPipelineTime(pipelineStatus.lastRun)}</div>
-				<div class="flex gap-4">
-					<span>{t('settings.onStill')}: {pipelineStatus.onStillCount}</span>
-					<span>{t('settings.distilled')}: {pipelineStatus.distilledCount}</span>
-					<span>{t('settings.jarred')}: {pipelineStatus.jarredCount}</span>
+		{#if progressPhase === 're_extract'}
+			{@const msgKey = progressStep === 'similarity' ? 'settings.progressReExtractSimilarity'
+				: progressStep === 'api' ? 'settings.progressReExtractApi'
+				: 'settings.progressReExtractSaving'}
+			<div class="flex flex-col gap-1.5">
+				<div class="flex items-center gap-2 text-xs text-info">
+					<span class="loading loading-spinner loading-xs"></span>
+					<span>{t(msgKey)}</span>
+					<span class="ml-auto tabular-nums">{progressPercent}%</span>
 				</div>
+				{#if progressTotal > 0}
+					<progress class="progress progress-info w-full" value={progressCurrent} max={progressTotal}></progress>
+				{/if}
 			</div>
 		{/if}
-	</section>
-
-	<!-- Similarity Settings (pipeline only) -->
-	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
-		<div class="flex items-center justify-between">
-			<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.similarity')}</h2>
-			<button
-				class="btn btn-ghost btn-xs btn-circle text-warning"
-				aria-label={t('settings.similarityWarningTitle')}
-				onclick={() => (similarityWarningOpen = true)}
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
-					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-				</svg>
-			</button>
-		</div>
-
-		<div class="flex items-center gap-3">
-			<div class="flex flex-col gap-0.5 flex-1">
-				<span class="text-sm font-medium">{t('settings.pipelineThreshold')}</span>
-				<span class="text-xs text-base-content/35">{t('settings.pipelineThresholdDesc')}</span>
-			</div>
-			<input
-				type="number"
-				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
-				step="0.05"
-				min="0.1"
-				max="0.9"
-				bind:value={pipelineThreshold}
-			/>
-			<button
-				class="btn btn-sm btn-primary"
-				onclick={() => handleSaveSimilarity('pipeline_threshold', String(pipelineThreshold))}
-				disabled={similaritySaving}
-			>
-				{t('common.save')}
-			</button>
-		</div>
-
-		<div class="flex items-center gap-3">
-			<div class="flex flex-col gap-0.5 flex-1">
-				<span class="text-sm font-medium">{t('settings.pipelineTopK')}</span>
-				<span class="text-xs text-base-content/35">{t('settings.pipelineTopKDesc')}</span>
-			</div>
-			<input
-				type="number"
-				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
-				step="1"
-				min="1"
-				max="20"
-				bind:value={pipelineTopK}
-			/>
-			<button
-				class="btn btn-sm btn-primary"
-				onclick={() => handleSaveSimilarity('pipeline_top_k', String(pipelineTopK))}
-				disabled={similaritySaving}
-			>
-				{t('common.save')}
-			</button>
-		</div>
-
-		<button
-			class="btn btn-sm btn-outline btn-ghost"
-			onclick={handleResetSimilarityDefaults}
-			disabled={similaritySaving}
-		>
-			{t('settings.resetDefaults')}
-		</button>
 	</section>
 </div>
 
@@ -909,30 +1009,10 @@
 					<span class="text-info font-bold">&#8226;</span>
 					{t('settings.pipelineWarning3')}
 				</li>
-			</ul>
-			<div class="modal-action">
-				<button class="btn btn-sm btn-primary" onclick={() => (pipelineWarningOpen = false)}>
-					{t('settings.providerWarningClose')}
-				</button>
-			</div>
-		</div>
-		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-		<div class="modal-backdrop" onclick={() => (pipelineWarningOpen = false)}></div>
-	</div>
-{/if}
-
-<!-- Similarity Warning Modal -->
-{#if similarityWarningOpen}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal modal-open" onkeydown={(e) => e.key === 'Escape' && (similarityWarningOpen = false)}>
-		<div class="modal-box border border-base-300">
-			<h3 class="text-lg font-bold flex items-center gap-2">
-				<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-warning" viewBox="0 0 20 20" fill="currentColor">
-					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-				</svg>
-				{t('settings.similarityWarningTitle')}
-			</h3>
-			<ul class="py-4 space-y-2 text-sm">
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.pipelineWarning4')}
+				</li>
 				<li class="flex gap-2">
 					<span class="text-warning font-bold">&#8226;</span>
 					{t('settings.similarityWarning1')}
@@ -951,12 +1031,94 @@
 				</li>
 			</ul>
 			<div class="modal-action">
-				<button class="btn btn-sm btn-primary" onclick={() => (similarityWarningOpen = false)}>
+				<button class="btn btn-sm btn-primary" onclick={() => (pipelineWarningOpen = false)}>
 					{t('settings.providerWarningClose')}
 				</button>
 			</div>
 		</div>
 		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-		<div class="modal-backdrop" onclick={() => (similarityWarningOpen = false)}></div>
+		<div class="modal-backdrop" onclick={() => (pipelineWarningOpen = false)}></div>
+	</div>
+{/if}
+
+<!-- Re-embed Confirmation Modal -->
+{#if reembedConfirmOpen}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal modal-open" onkeydown={(e) => e.key === 'Escape' && (reembedConfirmOpen = false)}>
+		<div class="modal-box border border-base-300">
+			<h3 class="text-lg font-bold flex items-center gap-2">
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-warning" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+				</svg>
+				{t('settings.confirmReembed')}
+			</h3>
+			<ul class="py-4 space-y-2 text-sm">
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.confirmReembedMsg1')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.confirmReembedMsg2')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-success font-bold">&#8226;</span>
+					{t('settings.confirmReembedMsg3')}
+				</li>
+			</ul>
+			<div class="modal-action">
+				<button class="btn btn-sm btn-ghost" onclick={() => { reembedConfirmOpen = false; reembedPendingAction = null; }}>
+					{t('common.cancel')}
+				</button>
+				<button class="btn btn-sm btn-warning" onclick={handleConfirmReembed}>
+					{t('settings.confirmReembedProceed')}
+				</button>
+			</div>
+		</div>
+		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={() => { reembedConfirmOpen = false; reembedPendingAction = null; }}></div>
+	</div>
+{/if}
+
+<!-- Re-extract Confirmation Modal -->
+{#if reextractConfirmOpen}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal modal-open" onkeydown={(e) => e.key === 'Escape' && (reextractConfirmOpen = false)}>
+		<div class="modal-box border border-base-300">
+			<h3 class="text-lg font-bold flex items-center gap-2">
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-warning" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+				</svg>
+				{t('settings.confirmReextract')}
+			</h3>
+			<ul class="py-4 space-y-2 text-sm">
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.confirmReextractMsg1')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-success font-bold">&#8226;</span>
+					{t('settings.confirmReextractMsg2')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.confirmReextractMsg3')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.confirmReextractMsg4')}
+				</li>
+			</ul>
+			<div class="modal-action">
+				<button class="btn btn-sm btn-ghost" onclick={() => (reextractConfirmOpen = false)}>
+					{t('common.cancel')}
+				</button>
+				<button class="btn btn-sm btn-warning" onclick={handleConfirmReextract}>
+					{t('settings.confirmReextractProceed')}
+				</button>
+			</div>
+		</div>
+		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={() => (reextractConfirmOpen = false)}></div>
 	</div>
 {/if}

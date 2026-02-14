@@ -6,12 +6,14 @@ use tokio::sync::Notify;
 
 use crate::ai::embedding::{resolve_embedding_config, EmbeddingConfig};
 use crate::db;
+use crate::models::PipelineProgress;
 
 pub struct PipelineSchedulerState {
     interval_min: Arc<AtomicU64>,
     notify: Arc<Notify>,
     next_run_ms: Arc<AtomicU64>,
     running: Arc<AtomicBool>,
+    progress: Arc<Mutex<Option<PipelineProgress>>>,
 }
 
 impl PipelineSchedulerState {
@@ -21,7 +23,18 @@ impl PipelineSchedulerState {
             notify: Arc::new(Notify::new()),
             next_run_ms: Arc::new(AtomicU64::new(0)),
             running: Arc::new(AtomicBool::new(false)),
+            progress: Arc::new(Mutex::new(None)),
         }
+    }
+
+    pub fn clear_progress(&self) {
+        if let Ok(mut p) = self.progress.lock() {
+            *p = None;
+        }
+    }
+
+    pub fn get_progress(&self) -> Option<PipelineProgress> {
+        self.progress.lock().ok().and_then(|p| p.clone())
     }
 
     pub fn update_interval(&self, minutes: u64) {
@@ -37,7 +50,8 @@ impl PipelineSchedulerState {
         if self.running.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).is_err() {
             return Err("Pipeline is already running".to_string());
         }
-        let result = run_pipeline(conn, config).await;
+        let result = run_pipeline(conn, config, &self.progress).await;
+        self.clear_progress();
         self.running.store(false, Ordering::SeqCst);
         result
     }
@@ -60,6 +74,7 @@ impl PipelineSchedulerState {
         let notify = self.notify.clone();
         let next_run_ms = self.next_run_ms.clone();
         let running = self.running.clone();
+        let progress = self.progress.clone();
 
         tauri::async_runtime::spawn(async move {
             let mut run_count = 0u64;
@@ -103,9 +118,10 @@ impl PipelineSchedulerState {
                     log::info!("Pipeline: skipping scheduled run (already running)");
                     continue;
                 }
-                if let Err(e) = run_pipeline(&conn, &config).await {
+                if let Err(e) = run_pipeline(&conn, &config, &progress).await {
                     log::error!("Pipeline run failed: {}", e);
                 }
+                if let Ok(mut p) = progress.lock() { *p = None; }
                 running.store(false, Ordering::SeqCst);
 
                 // Record last run time
@@ -134,14 +150,28 @@ impl PipelineSchedulerState {
 async fn run_pipeline(
     conn: &Arc<Mutex<Connection>>,
     config: &EmbeddingConfig,
+    progress: &Arc<Mutex<Option<PipelineProgress>>>,
 ) -> Result<(), String> {
     log::info!("Pipeline: starting run");
 
+    // Normal flow: ON_STILL → DISTILLED → JARRED
     let distilled = crate::pipeline::distill::distill_mashes(conn, config).await?;
     log::info!("Pipeline: distilled {} mashes", distilled);
 
     let jarred = crate::pipeline::jar::jar_mashes(conn, config).await?;
     log::info!("Pipeline: jarred {} mashes", jarred);
+
+    // RE_EMBED → embed only → JARRED
+    let reembedded = crate::pipeline::distill::reembed_mashes(conn, config, progress).await?;
+    if reembedded > 0 {
+        log::info!("Pipeline: re-embedded {} mashes", reembedded);
+    }
+
+    // RE_EXTRACT → extract only → JARRED
+    let reextracted = crate::pipeline::jar::reextract_mashes(conn, config, progress).await?;
+    if reextracted > 0 {
+        log::info!("Pipeline: re-extracted {} mashes", reextracted);
+    }
 
     Ok(())
 }

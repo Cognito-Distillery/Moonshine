@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { MashType } from '$lib/types';
-	import { MashStatus } from '$lib/types';
-	import { addMash, loadMashes } from '$lib/stores/mashes.svelte';
+	import { addMash } from '$lib/stores/mashes.svelte';
 	import { t } from '$lib/i18n/index.svelte';
 	import type { MessageKey } from '$lib/i18n/index.svelte';
 
@@ -33,8 +32,6 @@
 			summary = '';
 			context = '';
 			memo = '';
-
-			await loadMashes(MashStatus.MASH_TUN);
 		} catch {
 			// toast already shown by store — keep form values
 		}

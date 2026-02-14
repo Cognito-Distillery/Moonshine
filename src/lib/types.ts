@@ -4,7 +4,9 @@ export enum MashStatus {
 	MASH_TUN = 'MASH_TUN',
 	ON_STILL = 'ON_STILL',
 	DISTILLED = 'DISTILLED',
-	JARRED = 'JARRED'
+	JARRED = 'JARRED',
+	RE_EMBED = 'RE_EMBED',
+	RE_EXTRACT = 'RE_EXTRACT'
 }
 
 export interface Mash {

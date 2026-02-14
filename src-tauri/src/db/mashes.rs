@@ -171,12 +171,24 @@ pub fn set_mash_status(conn: &Connection, id: &str, status: &str) -> Result<(), 
     Ok(())
 }
 
-pub fn reset_all_embeddings(conn: &Connection) -> Result<u32, String> {
+pub fn reset_for_reembed(conn: &Connection) -> Result<u32, String> {
     let now = now_ms();
     let count = conn
         .execute(
-            "UPDATE mashes SET embedding = NULL, status = 'ON_STILL', updated_at = ?1
+            "UPDATE mashes SET embedding = NULL, status = 'RE_EMBED', updated_at = ?1
              WHERE status IN ('DISTILLED', 'JARRED')",
+            params![now],
+        )
+        .map_err(|e| e.to_string())?;
+    Ok(count as u32)
+}
+
+pub fn reset_for_reextract(conn: &Connection) -> Result<u32, String> {
+    let now = now_ms();
+    let count = conn
+        .execute(
+            "UPDATE mashes SET status = 'RE_EXTRACT', updated_at = ?1
+             WHERE status = 'JARRED'",
             params![now],
         )
         .map_err(|e| e.to_string())?;

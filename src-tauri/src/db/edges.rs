@@ -109,6 +109,13 @@ pub fn delete_edge(conn: &Connection, id: i64) -> Result<(), String> {
     Ok(())
 }
 
+pub fn delete_ai_edges(conn: &Connection) -> Result<u32, String> {
+    let count = conn
+        .execute("DELETE FROM edges WHERE source = 'ai'", [])
+        .map_err(|e| e.to_string())?;
+    Ok(count as u32)
+}
+
 pub fn get_graph(conn: &Connection, filters: &GraphFilters) -> Result<GraphData, String> {
     // Build dynamic WHERE clauses for nodes
     let mut node_conditions = vec!["m.status = 'JARRED'".to_string()];

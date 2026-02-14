@@ -1,5 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
 
+export interface PipelineProgress {
+	phase: string;
+	step: string;
+	current: number;
+	total: number;
+}
+
 export interface PipelineStatus {
 	lastRun: number | null;
 	nextRun: number | null;
@@ -8,6 +15,7 @@ export interface PipelineStatus {
 	distilledCount: number;
 	jarredCount: number;
 	running: boolean;
+	progress: PipelineProgress | null;
 }
 
 export function triggerPipeline(): Promise<void> {

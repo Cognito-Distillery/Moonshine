@@ -23,3 +23,7 @@ export function switchEmbeddingModel(model: string): Promise<number> {
 export function switchChatModel(model: string): Promise<void> {
 	return invoke('switch_chat_model', { model });
 }
+
+export function reextractRelationships(): Promise<number> {
+	return invoke<number>('reextract_relationships');
+}

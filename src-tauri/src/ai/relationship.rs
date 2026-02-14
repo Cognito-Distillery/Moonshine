@@ -94,7 +94,7 @@ pub async fn extract_relations(
     Ok(results)
 }
 
-async fn extract_batch(
+pub async fn extract_batch(
     config: &EmbeddingConfig,
     batch: &[RelationCandidate],
 ) -> Result<Vec<ExtractedRelation>, String> {
