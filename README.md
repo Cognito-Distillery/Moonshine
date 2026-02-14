@@ -34,6 +34,49 @@ No server required. Everything runs locally on your machine.
 
 ---
 
+## Prerequisites
+
+An API key from **at least one** of the following AI providers is required for embedding generation and relationship extraction:
+
+| Provider | Key | Usage |
+|----------|-----|-------|
+| [OpenAI](https://platform.openai.com/api-keys) | `sk-...` | Embeddings + Relationship extraction |
+| [Google Gemini](https://aistudio.google.com/apikey) | `AI...` | Embeddings + Relationship extraction |
+
+> Both are **paid APIs**. Configure your key in **Settings** after installation.
+
+---
+
+## Installation
+
+Download the latest release for your platform:
+
+**[GitHub Releases](https://github.com/Cognito-Distillery/moonshine/releases/latest)**
+
+| Platform | File |
+|----------|------|
+| **Linux** | `.AppImage` / `.deb` |
+| **macOS** | `.dmg` |
+| **Windows** | `.msi` / `.exe` |
+
+> **macOS:** If you see *"moonshine is damaged and can't be opened"*, run this in Terminal:
+> ```bash
+> xattr -cr /Applications/moonshine.app
+> ```
+> This removes the quarantine flag that macOS applies to unsigned apps.
+
+### Data Location
+
+All data is stored in a single SQLite file:
+
+| Platform | Path |
+|----------|------|
+| **Linux** | `~/.local/share/com.moonshine.app/moonshine.db` |
+| **macOS** | `~/Library/Application Support/com.moonshine.app/moonshine.db` |
+| **Windows** | `C:\Users\{user}\AppData\Roaming\com.moonshine.app\moonshine.db` |
+
+---
+
 ## The Process
 
 ### 1. Mashing
@@ -129,108 +172,9 @@ System Settings > Shortcuts > Custom Shortcuts > Add new shortcut with:
 
 ---
 
-## Tech Stack
-
-```
-Frontend    Svelte 5 · SvelteKit · TypeScript · Tailwind CSS 4 · DaisyUI 5
-Backend     Rust · SQLite (FTS5) · reqwest · Cytoscape.js
-Desktop     Tauri 2
-AI          OpenAI · Gemini (embeddings + relationship extraction)
-```
-
----
-
-## Install
-
-Download the latest release for your platform:
-
-**[GitHub Releases](https://github.com/Cognito-Distillery/moonshine/releases/latest)**
-
-| Platform | File |
-|----------|------|
-| **Linux** | `.AppImage` / `.deb` |
-| **macOS** | `.dmg` |
-| **Windows** | `.msi` / `.exe` |
-
-### Data Location
-
-All data is stored in a single SQLite file:
-
-| Platform | Path |
-|----------|------|
-| **Linux** | `~/.local/share/com.moonshine.app/moonshine.db` |
-| **macOS** | `~/Library/Application Support/com.moonshine.app/moonshine.db` |
-| **Windows** | `C:\Users\{user}\AppData\Roaming\com.moonshine.app\moonshine.db` |
-
----
-
 ## Development
 
-### Prerequisites
-
-- [Bun](https://bun.sh) (or Node.js)
-- [Rust toolchain](https://rustup.rs)
-- [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/)
-
-```bash
-bun install
-bun run tauri dev
-```
-
-### Build
-
-```bash
-bun run tauri build
-```
-
-### Release (for forks)
-
-1. Generate a signing key:
-
-```bash
-bun tauri signer generate -w ~/.tauri/moonshine.key
-```
-
-2. Add the following **Repository Secrets** in GitHub (Settings > Secrets and variables > Actions):
-
-| Secret | Value |
-|--------|-------|
-| `TAURI_SIGNING_PRIVATE_KEY` | Contents of the generated `.key` file |
-| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Password used during key generation |
-
-3. Push a version tag to trigger the build:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-A draft release will be created on GitHub with builds for Linux, macOS, and Windows.
-
----
-
-## Project Structure
-
-```
-src/
-├── routes/              # Pages (mashing, mashes, still, jar-shelf, settings, help)
-├── lib/
-│   ├── commands/        # Tauri IPC wrappers
-│   ├── components/      # Svelte components
-│   ├── graph/           # Cytoscape.js config & events
-│   ├── stores/          # State management (Svelte 5 runes)
-│   ├── i18n/            # Internationalization (ko, en)
-│   ├── types/           # TypeScript type definitions
-│   └── utils/           # Utility functions
-src-tauri/
-├── src/
-│   ├── ai/              # Embedding generation (OpenAI, Gemini)
-│   ├── commands/        # Tauri IPC command handlers
-│   ├── db/              # SQLite database (mashes, edges, settings, search cache)
-│   ├── pipeline/        # Auto-distillation pipeline & scheduler
-│   ├── models.rs        # Data models
-│   └── similarity.rs    # Cosine similarity & vector search
-```
+See **[Development Guide](docs/development_guide.md)** for tech stack, build instructions, and project structure.
 
 ---
 
