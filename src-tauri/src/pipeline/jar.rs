@@ -47,10 +47,22 @@ pub async fn jar_mashes(
 
     log::info!("Jarring {} mashes", distilled.len());
 
+    // Read similarity settings
+    let (threshold, pipeline_top_k) = {
+        let conn = conn.lock().map_err(|e| e.to_string())?;
+        let threshold = crate::db::settings::get_setting(&conn, "pipeline_threshold")?
+            .and_then(|v| v.parse::<f32>().ok())
+            .unwrap_or(0.3);
+        let top_k = crate::db::settings::get_setting(&conn, "pipeline_top_k")?
+            .and_then(|v| v.parse::<usize>().ok())
+            .unwrap_or(5);
+        (threshold, top_k)
+    };
+
     // Step 2: Find similar pairs (sync - all in-memory)
     let similar_pairs = {
         let conn = conn.lock().map_err(|e| e.to_string())?;
-        find_all_similar_pairs(&conn, &distilled)?
+        find_all_similar_pairs(&conn, &distilled, threshold, pipeline_top_k)?
     };
     log::info!("Found {} similar pairs", similar_pairs.len());
 
@@ -102,6 +114,8 @@ pub async fn jar_mashes(
 fn find_all_similar_pairs(
     conn: &Connection,
     distilled: &[DistilledMash],
+    threshold: f32,
+    pipeline_top_k: usize,
 ) -> Result<Vec<SimilarPair>, String> {
     let with_embedding: Vec<(&DistilledMash, &Vec<f32>)> = distilled
         .iter()
@@ -114,7 +128,7 @@ fn find_all_similar_pairs(
 
     let mut jarred_pairs = Vec::new();
     for (mash, embedding) in &with_embedding {
-        match find_similar_mashes(conn, &mash.id, embedding, 5, 0.3) {
+        match find_similar_mashes(conn, &mash.id, embedding, pipeline_top_k, threshold) {
             Ok(pairs) => jarred_pairs.extend(pairs),
             Err(e) => log::warn!("Similarity search failed for {}: {}", mash.id, e),
         }
@@ -124,7 +138,7 @@ fn find_all_similar_pairs(
         .iter()
         .map(|(m, e)| (m.id.clone(), (*e).clone()))
         .collect();
-    let batch_pairs = find_similar_in_batch(&batch_items, 0.3);
+    let batch_pairs = find_similar_in_batch(&batch_items, threshold, pipeline_top_k);
 
     let mut seen = HashSet::new();
     let mut all_pairs = Vec::new();

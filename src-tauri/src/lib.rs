@@ -218,6 +218,8 @@ pub fn run() {
             commands::settings::set_setting,
             commands::settings::get_all_settings,
             commands::settings::switch_embedding_provider,
+            commands::settings::switch_embedding_model,
+            commands::settings::switch_chat_model,
             // Pipeline
             commands::pipeline::trigger_pipeline,
             commands::pipeline::set_pipeline_interval,

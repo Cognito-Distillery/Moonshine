@@ -79,10 +79,11 @@ pub fn find_similar_mashes(
 pub fn find_similar_in_batch(
     items: &[(String, Vec<f32>)],
     threshold: f32,
+    limit: usize,
 ) -> Vec<SimilarPair> {
     use std::collections::HashMap;
 
-    // Collect all pairs per source, keeping top-5
+    // Collect all pairs per source, keeping top-N
     let mut per_source: HashMap<usize, Vec<(usize, f32)>> = HashMap::new();
 
     for i in 0..items.len() {
@@ -95,13 +96,13 @@ pub fn find_similar_in_batch(
         }
     }
 
-    // Keep top-5 per source, deduplicate
+    // Keep top-N per source, deduplicate
     let mut seen = std::collections::HashSet::new();
     let mut pairs = Vec::new();
 
     for (src, mut candidates) in per_source {
         candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-        candidates.truncate(5);
+        candidates.truncate(limit);
         for (tgt, sim) in candidates {
             let (a, b) = if src < tgt { (src, tgt) } else { (tgt, src) };
             if seen.insert((a, b)) {

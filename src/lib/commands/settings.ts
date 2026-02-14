@@ -15,3 +15,11 @@ export function getAllSettings(): Promise<[string, string][]> {
 export function switchEmbeddingProvider(provider: string): Promise<number> {
 	return invoke<number>('switch_embedding_provider', { provider });
 }
+
+export function switchEmbeddingModel(model: string): Promise<number> {
+	return invoke<number>('switch_embedding_model', { model });
+}
+
+export function switchChatModel(model: string): Promise<void> {
+	return invoke('switch_chat_model', { model });
+}

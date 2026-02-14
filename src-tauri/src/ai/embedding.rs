@@ -38,6 +38,22 @@ pub enum EmbeddingTaskType {
 pub struct EmbeddingConfig {
     pub provider: EmbeddingProvider,
     pub api_key: String,
+    pub embedding_model: String,
+    pub chat_model: String,
+}
+
+pub fn default_embedding_model(provider: &EmbeddingProvider) -> &'static str {
+    match provider {
+        EmbeddingProvider::OpenAI => "text-embedding-3-small",
+        EmbeddingProvider::Gemini => "gemini-embedding-001",
+    }
+}
+
+pub fn default_chat_model(provider: &EmbeddingProvider) -> &'static str {
+    match provider {
+        EmbeddingProvider::OpenAI => "gpt-4o-mini",
+        EmbeddingProvider::Gemini => "gemini-2.0-flash",
+    }
 }
 
 pub fn resolve_embedding_config(conn: &Connection) -> Result<EmbeddingConfig, String> {
@@ -53,7 +69,18 @@ pub fn resolve_embedding_config(conn: &Connection) -> Result<EmbeddingConfig, St
     let api_key = db::settings::get_setting(conn, key_name)?
         .ok_or_else(|| format!("{} API key not configured", provider.as_str()))?;
 
-    Ok(EmbeddingConfig { provider, api_key })
+    let embedding_model = db::settings::get_setting(conn, "embedding_model")?
+        .unwrap_or_else(|| default_embedding_model(&provider).to_string());
+
+    let chat_model = db::settings::get_setting(conn, "chat_model")?
+        .unwrap_or_else(|| default_chat_model(&provider).to_string());
+
+    Ok(EmbeddingConfig {
+        provider,
+        api_key,
+        embedding_model,
+        chat_model,
+    })
 }
 
 // --- Main entry point ---
@@ -68,9 +95,12 @@ pub async fn generate_embeddings(
     }
 
     match config.provider {
-        EmbeddingProvider::OpenAI => generate_openai_embeddings(&config.api_key, texts).await,
+        EmbeddingProvider::OpenAI => {
+            generate_openai_embeddings(&config.api_key, &config.embedding_model, texts).await
+        }
         EmbeddingProvider::Gemini => {
-            generate_gemini_embeddings(&config.api_key, texts, task_type).await
+            generate_gemini_embeddings(&config.api_key, &config.embedding_model, texts, task_type)
+                .await
         }
     }
 }
@@ -95,6 +125,7 @@ struct OpenAIEmbeddingData {
 
 async fn generate_openai_embeddings(
     api_key: &str,
+    model: &str,
     texts: Vec<String>,
 ) -> Result<Vec<Option<Vec<f32>>>, String> {
     let client = reqwest::Client::new();
@@ -103,7 +134,7 @@ async fn generate_openai_embeddings(
     // OpenAI batch limit: 2048 per request
     for chunk in texts.chunks(2048) {
         let request = OpenAIEmbeddingRequest {
-            model: "text-embedding-3-small".to_string(),
+            model: model.to_string(),
             input: chunk.to_vec(),
         };
 
@@ -173,6 +204,7 @@ struct GeminiEmbeddingValues {
 
 async fn generate_gemini_embeddings(
     api_key: &str,
+    model: &str,
     texts: Vec<String>,
     task_type: EmbeddingTaskType,
 ) -> Result<Vec<Option<Vec<f32>>>, String> {
@@ -182,6 +214,12 @@ async fn generate_gemini_embeddings(
         EmbeddingTaskType::Query => "RETRIEVAL_QUERY",
     };
 
+    let model_path = if model.starts_with("models/") {
+        model.to_string()
+    } else {
+        format!("models/{}", model)
+    };
+
     let mut all_results: Vec<Option<Vec<f32>>> = Vec::with_capacity(texts.len());
 
     // Gemini batch limit: 100 per request
@@ -189,7 +227,7 @@ async fn generate_gemini_embeddings(
         let requests: Vec<GeminiEmbedRequest> = chunk
             .iter()
             .map(|text| GeminiEmbedRequest {
-                model: "models/gemini-embedding-001".to_string(),
+                model: model_path.clone(),
                 content: GeminiContent {
                     parts: vec![GeminiPart { text: text.clone() }],
                 },
@@ -200,8 +238,12 @@ async fn generate_gemini_embeddings(
 
         let batch_request = GeminiBatchRequest { requests };
 
+        let url = format!(
+            "https://generativelanguage.googleapis.com/v1beta/{}:batchEmbedContents",
+            model_path
+        );
         let response = client
-            .post("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents")
+            .post(&url)
             .header("x-goog-api-key", api_key)
             .json(&batch_request)
             .send()

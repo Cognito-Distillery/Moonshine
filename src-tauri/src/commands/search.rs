@@ -46,7 +46,15 @@ pub async fn search_semantic(
     };
 
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let similar = crate::similarity::find_similar_mashes(&conn, "", &embedding, 10, 0.3)?;
+
+    let threshold = db::settings::get_setting(&conn, "search_threshold")?
+        .and_then(|v| v.parse::<f32>().ok())
+        .unwrap_or(0.3);
+    let search_top_k = db::settings::get_setting(&conn, "search_top_k")?
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(10);
+
+    let similar = crate::similarity::find_similar_mashes(&conn, "", &embedding, search_top_k, threshold)?;
 
     let result_ids: Vec<String> = similar.iter().map(|s| s.target_id.clone()).collect();
 
@@ -84,10 +92,17 @@ pub fn replay_cached_search(
 ) -> Result<GraphData, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
+    let threshold = db::settings::get_setting(&conn, "search_threshold")?
+        .and_then(|v| v.parse::<f32>().ok())
+        .unwrap_or(0.3);
+    let search_top_k = db::settings::get_setting(&conn, "search_top_k")?
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(10);
+
     let embedding = db::search_cache::get_cached_embedding(&conn, cache_id)?
         .ok_or_else(|| "Cache entry not found".to_string())?;
 
-    let similar = crate::similarity::find_similar_mashes(&conn, "", &embedding, 10, 0.3)?;
+    let similar = crate::similarity::find_similar_mashes(&conn, "", &embedding, search_top_k, threshold)?;
 
     // Update result_ids
     let result_ids: Vec<String> = similar.iter().map(|s| s.target_id.clone()).collect();

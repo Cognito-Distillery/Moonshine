@@ -100,19 +100,15 @@ async fn extract_batch(
 ) -> Result<Vec<ExtractedRelation>, String> {
     let pairs_json = serde_json::to_string(batch).map_err(|e| e.to_string())?;
 
-    let (url, model) = match config.provider {
-        EmbeddingProvider::OpenAI => (
-            "https://api.openai.com/v1/chat/completions",
-            "gpt-4o-mini",
-        ),
-        EmbeddingProvider::Gemini => (
-            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-            "gemini-2.0-flash",
-        ),
+    let url = match config.provider {
+        EmbeddingProvider::OpenAI => "https://api.openai.com/v1/chat/completions",
+        EmbeddingProvider::Gemini => {
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+        }
     };
 
     let request = ChatRequest {
-        model: model.to_string(),
+        model: config.chat_model.clone(),
         temperature: 0.1,
         response_format: ResponseFormat {
             format_type: "json_object".to_string(),

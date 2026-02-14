@@ -6,7 +6,13 @@
 	import { uiStore } from '$lib/stores/ui.svelte';
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { t } from '$lib/i18n/index.svelte';
-	import { defaultCytoscapeOptions, cytoscapeLayout } from '$lib/graph/cytoscape-config';
+	import {
+		defaultCytoscapeOptions,
+		createCytoscapeLayout,
+		defaultLayoutParams,
+		DEFAULT_WHEEL_SENSITIVITY,
+		type LayoutParams
+	} from '$lib/graph/cytoscape-config';
 	import {
 		setupNodeEvents,
 		setupHoverEvents,
@@ -35,14 +41,47 @@
 		targetType: 'canvas'
 	});
 
+	let layoutParams = $state<LayoutParams>({ ...defaultLayoutParams });
+	let wheelSensitivity = $state(DEFAULT_WHEEL_SENSITIVITY);
 	let prevElementIds = new Set<string>();
 
 	function startLayout() {
 		if (!cy) return;
 		layout?.stop();
-		layout = cy.layout(cytoscapeLayout as unknown as cytoscape.LayoutOptions);
+		layout = cy.layout(createCytoscapeLayout(layoutParams) as unknown as cytoscape.LayoutOptions);
 		layout.run();
 	}
+
+	function updateLayoutParam<K extends keyof LayoutParams>(key: K, value: LayoutParams[K]) {
+		layoutParams = { ...layoutParams, [key]: value };
+	}
+
+	function updateWheelSensitivity(value: number) {
+		wheelSensitivity = value;
+		if (cy) {
+			(cy as unknown as { _private: { options: { wheelSensitivity: number } } })._private.options.wheelSensitivity = value;
+		}
+	}
+
+	function resetLayoutParams() {
+		layoutParams = { ...defaultLayoutParams };
+		updateWheelSensitivity(DEFAULT_WHEEL_SENSITIVITY);
+	}
+
+	// Re-run layout when params change (debounced, skip initial)
+	let layoutParamsInitialized = false;
+	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+	$effect(() => {
+		const _params = layoutParams;
+		if (!layoutParamsInitialized) {
+			layoutParamsInitialized = true;
+			return;
+		}
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			if (cy) startLayout();
+		}, 300);
+	});
 
 	onMount(() => {
 		if (!container) return;
@@ -70,6 +109,7 @@
 		}
 
 		return () => {
+			clearTimeout(debounceTimer);
 			layout?.stop();
 			cy?.destroy();
 		};
@@ -228,7 +268,13 @@
 	<ConfirmDialog />
 
 	<!-- Bottom bar -->
-	<div class="absolute bottom-0 left-0 right-0 z-10">
-		<BottomBar />
+	<div class="absolute bottom-0 left-0 right-0 z-40">
+		<BottomBar
+			{layoutParams}
+			{wheelSensitivity}
+			onParamChange={updateLayoutParam}
+			onWheelSensitivityChange={updateWheelSensitivity}
+			onReset={resetLayoutParams}
+		/>
 	</div>
 </div>

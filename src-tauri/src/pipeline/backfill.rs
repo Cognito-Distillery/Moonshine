@@ -12,6 +12,18 @@ pub async fn backfill_isolated_nodes(
     conn: &Arc<Mutex<Connection>>,
     config: &EmbeddingConfig,
 ) -> Result<u32, String> {
+    // Read similarity settings
+    let (threshold, pipeline_top_k) = {
+        let conn = conn.lock().map_err(|e| e.to_string())?;
+        let threshold = crate::db::settings::get_setting(&conn, "pipeline_threshold")?
+            .and_then(|v| v.parse::<f32>().ok())
+            .unwrap_or(0.3);
+        let top_k = crate::db::settings::get_setting(&conn, "pipeline_top_k")?
+            .and_then(|v| v.parse::<usize>().ok())
+            .unwrap_or(5);
+        (threshold, top_k)
+    };
+
     // Step 1: Find isolated JARRED nodes (sync)
     let (isolated, candidates) = {
         let conn = conn.lock().map_err(|e| e.to_string())?;
@@ -46,7 +58,7 @@ pub async fn backfill_isolated_nodes(
         // Find similar pairs
         let mut all_pairs = Vec::new();
         for (id, _, embedding) in &isolated {
-            match find_similar_mashes(&conn, id, embedding, 5, 0.3) {
+            match find_similar_mashes(&conn, id, embedding, pipeline_top_k, threshold) {
                 Ok(pairs) => all_pairs.extend(pairs),
                 Err(e) => log::warn!("Backfill similarity search failed for {}: {}", id, e),
             }

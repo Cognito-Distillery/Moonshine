@@ -92,7 +92,6 @@
 					onkeydown={(e) => e.key === 'Enter' && !loading && replay(item)}
 				>
 					<span class="truncate flex-1 text-base-content/70">{item.query}</span>
-					<span class="badge badge-xs badge-ghost text-[10px]">{item.resultCount}</span>
 					<button
 						class="opacity-0 group-hover:opacity-100 text-base-content/30 hover:text-error transition-opacity text-[10px] shrink-0"
 						onclick={(e) => remove(e, item)}

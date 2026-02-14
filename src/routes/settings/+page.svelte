@@ -31,6 +31,26 @@
 		{ value: 'gemini', labelKey: 'settings.providerGemini' }
 	];
 
+	const embeddingModelPresets: Record<string, string[]> = {
+		openai: ['text-embedding-3-small', 'text-embedding-3-large'],
+		gemini: ['gemini-embedding-001']
+	};
+
+	const chatModelPresets: Record<string, string[]> = {
+		openai: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini', 'gpt-4.1-nano'],
+		gemini: ['gemini-2.0-flash', 'gemini-2.5-flash']
+	};
+
+	const defaultEmbeddingModels: Record<string, string> = {
+		openai: 'text-embedding-3-small',
+		gemini: 'gemini-embedding-001'
+	};
+
+	const defaultChatModels: Record<string, string> = {
+		openai: 'gpt-4o-mini',
+		gemini: 'gemini-2.0-flash'
+	};
+
 	// Password
 	let currentPassword = $state('');
 	let newPassword = $state('');
@@ -41,9 +61,25 @@
 	let providerSwitching = $state(false);
 	let providerWarningOpen = $state(false);
 
+	// Models
+	let embeddingModel = $state('text-embedding-3-small');
+	let chatModel = $state('gpt-4o-mini');
+	let customEmbeddingModel = $state('');
+	let customChatModel = $state('');
+	let embeddingModelCustom = $state(false);
+	let chatModelCustom = $state(false);
+	let modelSwitching = $state(false);
+
 	// API Key
 	let apiKey = $state('');
 	let apiKeySaving = $state(false);
+	let apiKeyEditing = $state(true);
+	let apiKeySavedValue = $state('');
+
+	function maskApiKey(key: string): string {
+		if (key.length <= 8) return '••••••••';
+		return key.slice(0, 4) + '••••••••' + key.slice(-4);
+	}
 
 	// Update
 	let updateStatus: 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'upToDate' | 'error' = $state('idle');
@@ -54,6 +90,12 @@
 	let pipelineStatus = $state<PipelineStatus | null>(null);
 	let pipelineRunning = $state(false);
 	let pipelineWarningOpen = $state(false);
+
+	// Similarity (pipeline only; search settings are in FilterPanel)
+	let pipelineThreshold = $state(0.3);
+	let pipelineTopK = $state(5);
+	let similaritySaving = $state(false);
+	let similarityWarningOpen = $state(false);
 
 	let apiKeySettingName = $derived(
 		embeddingProvider === 'gemini' ? 'gemini_api_key' : 'openai_api_key'
@@ -67,19 +109,46 @@
 
 	onMount(async () => {
 		try {
-			const [providerVal, statusVal] = await Promise.all([
+			const [providerVal, statusVal, embModelVal, chatModelVal, pThresholdVal, pTopKVal] = await Promise.all([
 				settingsCmd.getSetting('embedding_provider'),
-				pipelineCmd.getPipelineStatus()
+				pipelineCmd.getPipelineStatus(),
+				settingsCmd.getSetting('embedding_model'),
+				settingsCmd.getSetting('chat_model'),
+				settingsCmd.getSetting('pipeline_threshold'),
+				settingsCmd.getSetting('pipeline_top_k')
 			]);
 			embeddingProvider = providerVal || 'openai';
 			pipelineStatus = statusVal;
 			pipelineInterval = statusVal.intervalMin;
 			pipelineRunning = statusVal.running;
 
+			// Load similarity settings
+			if (pThresholdVal) pipelineThreshold = parseFloat(pThresholdVal);
+			if (pTopKVal) pipelineTopK = parseInt(pTopKVal);
+
+			// Load models (default if not set)
+			const provider = embeddingProvider;
+			embeddingModel = embModelVal || defaultEmbeddingModels[provider];
+			chatModel = chatModelVal || defaultChatModels[provider];
+
+			// Check if current values are custom (not in presets)
+			if (!embeddingModelPresets[provider]?.includes(embeddingModel)) {
+				customEmbeddingModel = embeddingModel;
+				embeddingModelCustom = true;
+			}
+			if (!chatModelPresets[provider]?.includes(chatModel)) {
+				customChatModel = chatModel;
+				chatModelCustom = true;
+			}
+
 			// Load the API key for the current provider
 			const keyName = embeddingProvider === 'gemini' ? 'gemini_api_key' : 'openai_api_key';
 			const keyVal = await settingsCmd.getSetting(keyName);
-			if (keyVal) apiKey = keyVal;
+			if (keyVal) {
+				apiKey = keyVal;
+				apiKeySavedValue = keyVal;
+				apiKeyEditing = false;
+			}
 		} catch {
 			// ignore
 		}
@@ -92,10 +161,20 @@
 			const resetCount = await settingsCmd.switchEmbeddingProvider(provider);
 			embeddingProvider = provider;
 
+			// Reset models to defaults for the new provider
+			embeddingModel = defaultEmbeddingModels[provider];
+			chatModel = defaultChatModels[provider];
+			embeddingModelCustom = false;
+			chatModelCustom = false;
+			customEmbeddingModel = '';
+			customChatModel = '';
+
 			// Load the API key for the new provider
 			const keyName = provider === 'gemini' ? 'gemini_api_key' : 'openai_api_key';
 			const keyVal = await settingsCmd.getSetting(keyName);
 			apiKey = keyVal || '';
+			apiKeySavedValue = keyVal || '';
+			apiKeyEditing = !keyVal;
 
 			if (resetCount > 0) {
 				showToast(t('settings.providerSwitched').replace('{count}', String(resetCount)), 'success');
@@ -106,6 +185,38 @@
 			showToast(String(e));
 		} finally {
 			providerSwitching = false;
+		}
+	}
+
+	async function handleSwitchEmbeddingModel(model: string) {
+		if (model === embeddingModel) return;
+		modelSwitching = true;
+		try {
+			const resetCount = await settingsCmd.switchEmbeddingModel(model);
+			embeddingModel = model;
+			if (resetCount > 0) {
+				showToast(t('settings.embeddingModelChanged').replace('{count}', String(resetCount)), 'success');
+			} else {
+				showToast(t('common.saved'), 'success');
+			}
+		} catch (e) {
+			showToast(String(e));
+		} finally {
+			modelSwitching = false;
+		}
+	}
+
+	async function handleSwitchChatModel(model: string) {
+		if (model === chatModel) return;
+		modelSwitching = true;
+		try {
+			await settingsCmd.switchChatModel(model);
+			chatModel = model;
+			showToast(t('settings.chatModelChanged'), 'success');
+		} catch (e) {
+			showToast(String(e));
+		} finally {
+			modelSwitching = false;
 		}
 	}
 
@@ -146,6 +257,8 @@
 		apiKeySaving = true;
 		try {
 			await settingsCmd.setSetting(apiKeySettingName, apiKey);
+			apiKeySavedValue = apiKey;
+			apiKeyEditing = false;
 			showToast(t('common.saved'), 'success');
 		} catch (e) {
 			showToast(String(e));
@@ -206,6 +319,35 @@
 		}
 	}
 
+	async function handleSaveSimilarity(key: string, value: string) {
+		similaritySaving = true;
+		try {
+			await settingsCmd.setSetting(key, value);
+			showToast(t('common.saved'), 'success');
+		} catch (e) {
+			showToast(String(e));
+		} finally {
+			similaritySaving = false;
+		}
+	}
+
+	async function handleResetSimilarityDefaults() {
+		similaritySaving = true;
+		try {
+			await Promise.all([
+				settingsCmd.setSetting('pipeline_threshold', '0.3'),
+				settingsCmd.setSetting('pipeline_top_k', '5')
+			]);
+			pipelineThreshold = 0.3;
+			pipelineTopK = 5;
+			showToast(t('settings.defaultsRestored'), 'success');
+		} catch (e) {
+			showToast(String(e));
+		} finally {
+			similaritySaving = false;
+		}
+	}
+
 	function formatTime(ts: number | null): string {
 		if (!ts) return t('settings.pipelineNever');
 		return new Date(ts).toLocaleString();
@@ -216,6 +358,56 @@
 	<div>
 		<h1 class="text-2xl font-semibold tracking-tight">{t('settings.title')}</h1>
 	</div>
+
+	<!-- App Update -->
+	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
+		<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('update.app')}</h2>
+		<div class="flex items-center justify-between">
+			<span class="text-sm">{t('update.version')}: <strong>v{__APP_VERSION__}</strong></span>
+
+			{#if updateStatus === 'idle'}
+				<button class="btn btn-sm btn-outline" onclick={checkForUpdates}>
+					{t('update.check')}
+				</button>
+			{:else if updateStatus === 'checking'}
+				<button class="btn btn-sm btn-outline" disabled>
+					<span class="loading loading-spinner loading-xs"></span>
+					{t('update.checking')}
+				</button>
+			{:else if updateStatus === 'available'}
+				<button class="btn btn-sm btn-primary" onclick={installUpdate}>
+					{t('update.install')}
+				</button>
+			{:else if updateStatus === 'downloading'}
+				<button class="btn btn-sm btn-primary" disabled>
+					<span class="loading loading-spinner loading-xs"></span>
+					{t('update.downloading')}
+				</button>
+			{:else if updateStatus === 'ready'}
+				<span class="text-xs text-success">{t('update.readyToInstall')}</span>
+			{:else if updateStatus === 'upToDate'}
+				<div class="flex items-center gap-2">
+					<span class="text-xs text-success">{t('update.upToDate')}</span>
+					<button class="btn btn-sm btn-ghost btn-xs" onclick={checkForUpdates} aria-label={t('update.check')}>
+						<svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+							<path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+						</svg>
+					</button>
+				</div>
+			{:else if updateStatus === 'error'}
+				<div class="flex items-center gap-2">
+					<span class="text-xs text-error">{t('update.failed')}</span>
+					<button class="btn btn-sm btn-outline btn-xs" onclick={checkForUpdates}>
+						{t('update.check')}
+					</button>
+				</div>
+			{/if}
+		</div>
+
+		{#if updateStatus === 'available'}
+			<p class="text-xs text-info">{t('update.available').replace('{version}', updateVersion)}</p>
+		{/if}
+	</section>
 
 	<!-- Layout -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
@@ -318,7 +510,7 @@
 		<p class="text-xs text-base-content/35">{t('settings.aiProviderDesc')}</p>
 
 		<div class="flex items-center justify-between">
-			<span class="text-sm font-medium">{t('settings.aiProvider')}</span>
+			<span class="text-sm font-medium">{t('settings.provider')}</span>
 			<div class="join">
 				{#each providers as prov}
 					<button
@@ -339,21 +531,133 @@
 		<!-- API Key -->
 		<div class="flex flex-col gap-2">
 			<span class="text-sm font-medium">{t('settings.apiKey')}</span>
+			{#if apiKeyEditing}
+				<div class="flex gap-2">
+					<input
+						type="password"
+						class="input input-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+						placeholder={apiKeyPlaceholder}
+						bind:value={apiKey}
+					/>
+					<button
+						class="btn btn-sm btn-primary"
+						onclick={handleSaveApiKey}
+						disabled={apiKeySaving || !apiKey.trim()}
+					>
+						{t('common.save')}
+					</button>
+					{#if apiKeySavedValue}
+						<button
+							class="btn btn-sm btn-ghost"
+							onclick={() => { apiKey = apiKeySavedValue; apiKeyEditing = false; }}
+						>
+							{t('common.cancel')}
+						</button>
+					{/if}
+				</div>
+			{:else}
+				<div class="flex items-center gap-2">
+					<span class="text-sm text-base-content/50 font-mono flex-1">{maskApiKey(apiKey)}</span>
+					<button
+						class="btn btn-sm btn-ghost"
+						onclick={() => { apiKey = ''; apiKeyEditing = true; }}
+					>
+						{t('common.edit')}
+					</button>
+				</div>
+			{/if}
+		</div>
+
+		<!-- Embedding Model -->
+		<div class="flex flex-col gap-2">
+			<span class="text-sm font-medium">{t('settings.embeddingModel')}</span>
 			<div class="flex gap-2">
-				<input
-					type="password"
-					class="input input-sm flex-1 bg-white/[0.12] border-white/[0.18]"
-					placeholder={apiKeyPlaceholder}
-					bind:value={apiKey}
-				/>
-				<button
-					class="btn btn-sm btn-primary"
-					onclick={handleSaveApiKey}
-					disabled={apiKeySaving}
+				<select
+					class="select select-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+					value={embeddingModelCustom ? '__custom__' : embeddingModel}
+					onchange={(e) => {
+						const val = (e.target as HTMLSelectElement).value;
+						if (val === '__custom__') {
+							embeddingModelCustom = true;
+							customEmbeddingModel = '';
+						} else {
+							embeddingModelCustom = false;
+							handleSwitchEmbeddingModel(val);
+						}
+					}}
+					disabled={modelSwitching || providerSwitching}
 				>
-					{t('common.save')}
-				</button>
+					{#each embeddingModelPresets[embeddingProvider] || [] as model}
+						<option value={model}>{model}</option>
+					{/each}
+					<option value="__custom__">{t('settings.modelCustom')}</option>
+				</select>
 			</div>
+			{#if embeddingModelCustom}
+				<div class="flex gap-2">
+					<input
+						type="text"
+						class="input input-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+						placeholder={t('settings.modelCustom')}
+						bind:value={customEmbeddingModel}
+					/>
+					<button
+						class="btn btn-sm btn-primary"
+						onclick={() => {
+							if (customEmbeddingModel.trim()) handleSwitchEmbeddingModel(customEmbeddingModel.trim());
+						}}
+						disabled={modelSwitching || !customEmbeddingModel.trim()}
+					>
+						{t('common.save')}
+					</button>
+				</div>
+			{/if}
+		</div>
+
+		<!-- Chat Model -->
+		<div class="flex flex-col gap-2">
+			<span class="text-sm font-medium">{t('settings.chatModel')}</span>
+			<div class="flex gap-2">
+				<select
+					class="select select-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+					value={chatModelCustom ? '__custom__' : chatModel}
+					onchange={(e) => {
+						const val = (e.target as HTMLSelectElement).value;
+						if (val === '__custom__') {
+							chatModelCustom = true;
+							customChatModel = '';
+						} else {
+							chatModelCustom = false;
+							handleSwitchChatModel(val);
+						}
+					}}
+					disabled={modelSwitching || providerSwitching}
+				>
+					{#each chatModelPresets[embeddingProvider] || [] as model}
+						<option value={model}>{model}</option>
+					{/each}
+					<option value="__custom__">{t('settings.modelCustom')}</option>
+				</select>
+			</div>
+			{#if chatModelCustom}
+				<div class="flex gap-2">
+					<input
+						type="text"
+						class="input input-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+						placeholder={t('settings.modelCustom')}
+						bind:value={customChatModel}
+					/>
+					<button
+						class="btn btn-sm btn-primary"
+						onclick={() => {
+							if (customChatModel.trim()) handleSwitchChatModel(customChatModel.trim());
+						}}
+						disabled={modelSwitching || !customChatModel.trim()}
+					>
+						{t('common.save')}
+					</button>
+				</div>
+			{/if}
 		</div>
 	</section>
 
@@ -367,7 +671,7 @@
 				onclick={() => (pipelineWarningOpen = true)}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
-					<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
 				</svg>
 			</button>
 		</div>
@@ -413,54 +717,72 @@
 		{/if}
 	</section>
 
-	<!-- App Update -->
+	<!-- Similarity Settings (pipeline only) -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
-		<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('update.app')}</h2>
 		<div class="flex items-center justify-between">
-			<span class="text-sm">{t('update.version')}: <strong>v{__APP_VERSION__}</strong></span>
-
-			{#if updateStatus === 'idle'}
-				<button class="btn btn-sm btn-outline" onclick={checkForUpdates}>
-					{t('update.check')}
-				</button>
-			{:else if updateStatus === 'checking'}
-				<button class="btn btn-sm btn-outline" disabled>
-					<span class="loading loading-spinner loading-xs"></span>
-					{t('update.checking')}
-				</button>
-			{:else if updateStatus === 'available'}
-				<button class="btn btn-sm btn-primary" onclick={installUpdate}>
-					{t('update.install')}
-				</button>
-			{:else if updateStatus === 'downloading'}
-				<button class="btn btn-sm btn-primary" disabled>
-					<span class="loading loading-spinner loading-xs"></span>
-					{t('update.downloading')}
-				</button>
-			{:else if updateStatus === 'ready'}
-				<span class="text-xs text-success">{t('update.readyToInstall')}</span>
-			{:else if updateStatus === 'upToDate'}
-				<div class="flex items-center gap-2">
-					<span class="text-xs text-success">{t('update.upToDate')}</span>
-					<button class="btn btn-sm btn-ghost btn-xs" onclick={checkForUpdates} aria-label={t('update.check')}>
-						<svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
-							<path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-						</svg>
-					</button>
-				</div>
-			{:else if updateStatus === 'error'}
-				<div class="flex items-center gap-2">
-					<span class="text-xs text-error">{t('update.failed')}</span>
-					<button class="btn btn-sm btn-outline btn-xs" onclick={checkForUpdates}>
-						{t('update.check')}
-					</button>
-				</div>
-			{/if}
+			<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.similarity')}</h2>
+			<button
+				class="btn btn-ghost btn-xs btn-circle text-warning"
+				aria-label={t('settings.similarityWarningTitle')}
+				onclick={() => (similarityWarningOpen = true)}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+				</svg>
+			</button>
 		</div>
 
-		{#if updateStatus === 'available'}
-			<p class="text-xs text-info">{t('update.available').replace('{version}', updateVersion)}</p>
-		{/if}
+		<div class="flex items-center gap-3">
+			<div class="flex flex-col gap-0.5 flex-1">
+				<span class="text-sm font-medium">{t('settings.pipelineThreshold')}</span>
+				<span class="text-xs text-base-content/35">{t('settings.pipelineThresholdDesc')}</span>
+			</div>
+			<input
+				type="number"
+				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
+				step="0.05"
+				min="0.1"
+				max="0.9"
+				bind:value={pipelineThreshold}
+			/>
+			<button
+				class="btn btn-sm btn-primary"
+				onclick={() => handleSaveSimilarity('pipeline_threshold', String(pipelineThreshold))}
+				disabled={similaritySaving}
+			>
+				{t('common.save')}
+			</button>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<div class="flex flex-col gap-0.5 flex-1">
+				<span class="text-sm font-medium">{t('settings.pipelineTopK')}</span>
+				<span class="text-xs text-base-content/35">{t('settings.pipelineTopKDesc')}</span>
+			</div>
+			<input
+				type="number"
+				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
+				step="1"
+				min="1"
+				max="20"
+				bind:value={pipelineTopK}
+			/>
+			<button
+				class="btn btn-sm btn-primary"
+				onclick={() => handleSaveSimilarity('pipeline_top_k', String(pipelineTopK))}
+				disabled={similaritySaving}
+			>
+				{t('common.save')}
+			</button>
+		</div>
+
+		<button
+			class="btn btn-sm btn-outline btn-ghost"
+			onclick={handleResetSimilarityDefaults}
+			disabled={similaritySaving}
+		>
+			{t('settings.resetDefaults')}
+		</button>
 	</section>
 </div>
 
@@ -506,8 +828,8 @@
 	<div class="modal modal-open" onkeydown={(e) => e.key === 'Escape' && (pipelineWarningOpen = false)}>
 		<div class="modal-box border border-base-300">
 			<h3 class="text-lg font-bold flex items-center gap-2">
-				<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-info" viewBox="0 0 20 20" fill="currentColor">
-					<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-warning" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
 				</svg>
 				{t('settings.pipelineWarningTitle')}
 			</h3>
@@ -533,5 +855,45 @@
 		</div>
 		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 		<div class="modal-backdrop" onclick={() => (pipelineWarningOpen = false)}></div>
+	</div>
+{/if}
+
+<!-- Similarity Warning Modal -->
+{#if similarityWarningOpen}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal modal-open" onkeydown={(e) => e.key === 'Escape' && (similarityWarningOpen = false)}>
+		<div class="modal-box border border-base-300">
+			<h3 class="text-lg font-bold flex items-center gap-2">
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-warning" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+				</svg>
+				{t('settings.similarityWarningTitle')}
+			</h3>
+			<ul class="py-4 space-y-2 text-sm">
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.similarityWarning1')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.similarityWarning2')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-info font-bold">&#8226;</span>
+					{t('settings.similarityWarning4')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-success font-bold">&#8226;</span>
+					{t('settings.similarityWarning5')}
+				</li>
+			</ul>
+			<div class="modal-action">
+				<button class="btn btn-sm btn-primary" onclick={() => (similarityWarningOpen = false)}>
+					{t('settings.providerWarningClose')}
+				</button>
+			</div>
+		</div>
+		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={() => (similarityWarningOpen = false)}></div>
 	</div>
 {/if}
