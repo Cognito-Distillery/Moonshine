@@ -2,8 +2,10 @@
 	import { onMount } from 'svelte';
 	import { check } from '@tauri-apps/plugin-updater';
 	import { relaunch } from '@tauri-apps/plugin-process';
-	import { getSidebarPosition, setSidebarPosition } from '$lib/stores/settings.svelte';
+	import { getSidebarPosition, setSidebarPosition, getDateFormat, setDateFormat, getTimeFormat, setTimeFormat } from '$lib/stores/settings.svelte';
 	import type { SidebarPosition } from '$lib/stores/settings.svelte';
+	import { formatDateTime } from '$lib/utils/datetime';
+	import type { DateFormatId, TimeFormatId } from '$lib/utils/datetime';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import * as authCmd from '$lib/commands/auth';
 	import * as settingsCmd from '$lib/commands/settings';
@@ -107,8 +109,10 @@
 
 	let intervalPercent = $derived(((pipelineInterval - 5) / (60 - 5)) * 100);
 
-	onMount(async () => {
-		try {
+	onMount(() => {
+		const previewTimer = setInterval(() => { previewNow = Date.now(); }, 1000);
+
+		(async () => { try {
 			const [providerVal, statusVal, embModelVal, chatModelVal, pThresholdVal, pTopKVal] = await Promise.all([
 				settingsCmd.getSetting('embedding_provider'),
 				pipelineCmd.getPipelineStatus(),
@@ -152,6 +156,10 @@
 		} catch {
 			// ignore
 		}
+			checkForUpdates();
+		})();
+
+		return () => clearInterval(previewTimer);
 	});
 
 	async function handleSwitchProvider(provider: string) {
@@ -348,9 +356,25 @@
 		}
 	}
 
-	function formatTime(ts: number | null): string {
+	const dateFormats: { value: DateFormatId; labelKey: MessageKey }[] = [
+		{ value: 'short', labelKey: 'settings.dateFormat.short' },
+		{ value: 'medium', labelKey: 'settings.dateFormat.medium' },
+		{ value: 'iso', labelKey: 'settings.dateFormat.iso' },
+		{ value: 'slash', labelKey: 'settings.dateFormat.slash' },
+		{ value: 'dot', labelKey: 'settings.dateFormat.dot' }
+	];
+
+	const timeFormats: { value: TimeFormatId; labelKey: MessageKey }[] = [
+		{ value: '24h', labelKey: 'settings.timeFormat.24h' },
+		{ value: '12h', labelKey: 'settings.timeFormat.12h' },
+		{ value: '24h-sec', labelKey: 'settings.timeFormat.24h-sec' }
+	];
+
+	let previewNow = $state(Date.now());
+
+	function formatPipelineTime(ts: number | null): string {
 		if (!ts) return t('settings.pipelineNever');
-		return new Date(ts).toLocaleString();
+		return formatDateTime(ts, getDateFormat(), getTimeFormat());
 	}
 </script>
 
@@ -365,15 +389,11 @@
 		<div class="flex items-center justify-between">
 			<span class="text-sm">{t('update.version')}: <strong>v{__APP_VERSION__}</strong></span>
 
-			{#if updateStatus === 'idle'}
-				<button class="btn btn-sm btn-outline" onclick={checkForUpdates}>
-					{t('update.check')}
-				</button>
-			{:else if updateStatus === 'checking'}
-				<button class="btn btn-sm btn-outline" disabled>
+			{#if updateStatus === 'idle' || updateStatus === 'checking'}
+				<span class="text-xs text-base-content/40 flex items-center gap-1">
 					<span class="loading loading-spinner loading-xs"></span>
 					{t('update.checking')}
-				</button>
+				</span>
 			{:else if updateStatus === 'available'}
 				<button class="btn btn-sm btn-primary" onclick={installUpdate}>
 					{t('update.install')}
@@ -386,19 +406,14 @@
 			{:else if updateStatus === 'ready'}
 				<span class="text-xs text-success">{t('update.readyToInstall')}</span>
 			{:else if updateStatus === 'upToDate'}
+				<span class="text-xs text-success">{t('update.upToDate')}</span>
+			{:else if updateStatus === 'error'}
 				<div class="flex items-center gap-2">
-					<span class="text-xs text-success">{t('update.upToDate')}</span>
+					<span class="text-xs text-error">{t('update.failed')}</span>
 					<button class="btn btn-sm btn-ghost btn-xs" onclick={checkForUpdates} aria-label={t('update.check')}>
 						<svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
 							<path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
 						</svg>
-					</button>
-				</div>
-			{:else if updateStatus === 'error'}
-				<div class="flex items-center gap-2">
-					<span class="text-xs text-error">{t('update.failed')}</span>
-					<button class="btn btn-sm btn-outline btn-xs" onclick={checkForUpdates}>
-						{t('update.check')}
 					</button>
 				</div>
 			{/if}
@@ -447,6 +462,54 @@
 					</button>
 				{/each}
 			</div>
+		</div>
+	</section>
+
+	<!-- Date & Time Format -->
+	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
+		<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.dateTimeFormat')}</h2>
+
+		<div class="flex flex-col gap-2">
+			<span class="text-sm font-medium">{t('settings.dateFormat')}</span>
+			<div class="flex flex-col gap-1">
+				{#each dateFormats as df}
+					<label class="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-white/[0.06]">
+						<input
+							type="radio"
+							name="dateFormat"
+							class="radio radio-sm radio-primary"
+							value={df.value}
+							checked={getDateFormat() === df.value}
+							onchange={() => { setDateFormat(df.value); showToast(t('common.saved'), 'success'); }}
+						/>
+						<span class="text-sm">{t(df.labelKey)}</span>
+					</label>
+				{/each}
+			</div>
+		</div>
+
+		<div class="flex flex-col gap-2">
+			<span class="text-sm font-medium">{t('settings.timeFormat')}</span>
+			<div class="flex flex-col gap-1">
+				{#each timeFormats as tf}
+					<label class="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-white/[0.06]">
+						<input
+							type="radio"
+							name="timeFormat"
+							class="radio radio-sm radio-primary"
+							value={tf.value}
+							checked={getTimeFormat() === tf.value}
+							onchange={() => { setTimeFormat(tf.value); showToast(t('common.saved'), 'success'); }}
+						/>
+						<span class="text-sm">{t(tf.labelKey)}</span>
+					</label>
+				{/each}
+			</div>
+		</div>
+
+		<div class="flex items-center gap-2 px-2 py-2 bg-white/[0.04] rounded">
+			<span class="text-xs text-base-content/40">{t('settings.preview')}:</span>
+			<span class="text-sm font-medium tabular-nums">{formatDateTime(previewNow, getDateFormat(), getTimeFormat())}</span>
 		</div>
 	</section>
 
@@ -707,7 +770,7 @@
 
 		{#if pipelineStatus}
 			<div class="text-xs text-base-content/50 space-y-1">
-				<div>{t('settings.pipelineLastRun')}: {formatTime(pipelineStatus.lastRun)}</div>
+				<div>{t('settings.pipelineLastRun')}: {formatPipelineTime(pipelineStatus.lastRun)}</div>
 				<div class="flex gap-4">
 					<span>{t('settings.onStill')}: {pipelineStatus.onStillCount}</span>
 					<span>{t('settings.distilled')}: {pipelineStatus.distilledCount}</span>

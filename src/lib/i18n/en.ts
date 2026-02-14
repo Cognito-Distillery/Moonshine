@@ -174,6 +174,14 @@ const en: Messages = {
 	'help.graph.highlight': '<b>Clear highlights</b> — Press the X button left of the search bar to clear search result highlighting.',
 	'help.graph.highlight.label': 'Clear highlights',
 	'help.graph.highlight.desc': 'Press the X button left of the search bar to clear search result highlighting.',
+	'help.graph.dblclick.label': 'Double-click',
+	'help.graph.dblclick.desc': 'Double-click a node to expand its connected neighbors into the graph.',
+	'help.graph.layout.label': 'Layout settings',
+	'help.graph.layout.desc': 'Adjust node spacing, edge length, convergence, spread force, and zoom sensitivity in the left panel.',
+	'help.graph.searchSettings.label': 'Search settings',
+	'help.graph.searchSettings.desc': 'Use the gear button next to the search bar to adjust natural search similarity threshold and max results.',
+	'help.graph.history.label': 'Search history',
+	'help.graph.history.desc': 'Use the clock button next to the search bar to view and replay recent natural language searches.',
 	'help.floatingMemo': 'Floating Memo',
 	'help.floatingMemo.desc': 'A small window for quickly capturing thoughts without switching to the main app. Access it from the system tray or via a keyboard shortcut.',
 	'help.shortcuts': 'Shortcuts',
@@ -338,15 +346,15 @@ const en: Messages = {
 	'graph.clearHighlights': 'Clear highlights',
 
 	// Search cache
-	'search.recent': 'Recent Searches',
-	'search.noRecent': 'No recent searches',
+	'search.recent': 'Recent Natural Searches',
+	'search.noRecent': 'No recent natural searches',
 	'search.cached': 'Cached',
 
 	// Similarity settings
 	'settings.similarity': 'Similarity',
 	'settings.pipelineThreshold': 'Pipeline Threshold',
 	'settings.pipelineThresholdDesc': 'Minimum similarity to create a relationship. Applied from the next pipeline run.',
-	'settings.searchThreshold': 'Search Threshold',
+	'settings.searchThreshold': 'Natural Search Similarity',
 	'settings.searchThresholdDesc': 'Minimum similarity to include in search results. Applied immediately.',
 	'settings.pipelineTopK': 'Candidates per Mash',
 	'settings.pipelineTopKDesc': 'Max number of similar mashes to find per mash and send to AI. Applied from the next pipeline run.',
@@ -369,6 +377,20 @@ const en: Messages = {
 	'layout.spreadForce': 'Spread Force',
 	'layout.zoomSensitivity': 'Zoom Sensitivity',
 	'layout.reset': 'Reset',
+
+	// Date & Time format
+	'settings.dateTimeFormat': 'Date & Time Format',
+	'settings.dateFormat': 'Date Format',
+	'settings.timeFormat': 'Time Format',
+	'settings.preview': 'Preview',
+	'settings.dateFormat.short': 'Short (Feb 15)',
+	'settings.dateFormat.medium': 'Medium (Feb 15, 2026)',
+	'settings.dateFormat.iso': 'ISO (2026-02-15)',
+	'settings.dateFormat.slash': 'Slash (02/15/2026)',
+	'settings.dateFormat.dot': 'Dot (2026.02.15)',
+	'settings.timeFormat.24h': '24-hour (14:30)',
+	'settings.timeFormat.12h': '12-hour (2:30 PM)',
+	'settings.timeFormat.24h-sec': '24-hour+sec (14:30:45)',
 
 	// Floating
 	'floating.title': 'Quick Mash'

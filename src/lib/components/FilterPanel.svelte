@@ -1,10 +1,18 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { graphStore } from '$lib/stores/graph.svelte';
 	import { t } from '$lib/i18n/index.svelte';
-	import { getSetting, setSetting } from '$lib/commands/settings';
 	import type { RelationType, EdgeSource } from '$lib/types/graph';
-	import RecentSearches from './RecentSearches.svelte';
+	import type { LayoutParams } from '$lib/graph/cytoscape-config';
+
+	interface Props {
+		layoutParams: LayoutParams;
+		wheelSensitivity: number;
+		onParamChange: <K extends keyof LayoutParams>(key: K, value: LayoutParams[K]) => void;
+		onWheelSensitivityChange: (value: number) => void;
+		onReset: () => void;
+	}
+
+	let { layoutParams, wheelSensitivity, onParamChange, onWheelSensitivityChange, onReset }: Props = $props();
 
 	const relationTypes: { type: RelationType; key: 'filter.relatedTo' | 'filter.supports' | 'filter.conflictsWith'; bg: string; text: string }[] = [
 		{ type: 'RELATED_TO', key: 'filter.relatedTo', bg: 'bg-[#57534e]', text: 'text-[#d6d3d1]' },
@@ -12,28 +20,18 @@
 		{ type: 'CONFLICTS_WITH', key: 'filter.conflictsWith', bg: 'bg-[#b91c1c]', text: 'text-[#fecaca]' }
 	];
 
-	let searchThreshold = $state(0.3);
-	let searchTopK = $state(10);
+	const convergenceSteps = [0.1, 0.01, 0.001, 0.0001] as const;
 
-	onMount(async () => {
-		try {
-			const [thresholdVal, topKVal] = await Promise.all([
-				getSetting('search_threshold'),
-				getSetting('search_top_k')
-			]);
-			if (thresholdVal) searchThreshold = parseFloat(thresholdVal);
-			if (topKVal) searchTopK = parseInt(topKVal);
-		} catch {
-			// ignore
-		}
-	});
+	const convergenceIndex = $derived(
+		Math.max(0, convergenceSteps.indexOf(layoutParams.convergenceThreshold as (typeof convergenceSteps)[number]))
+	);
 
-	function handleSaveThreshold() {
-		setSetting('search_threshold', String(searchThreshold));
+	function handleConvergenceChange(idx: number) {
+		onParamChange('convergenceThreshold', convergenceSteps[idx]);
 	}
 
-	function handleSaveTopK() {
-		setSetting('search_top_k', String(searchTopK));
+	function fillPercent(value: number, min: number, max: number) {
+		return ((value - min) / (max - min)) * 100;
 	}
 </script>
 
@@ -77,71 +75,80 @@
 
 	<div class="divider my-1"></div>
 
-	<div class="text-xs text-base-content/50 space-y-1">
-		<div>{t('filter.nodes')}: {graphStore.nodes.length}</div>
-		<div>{t('filter.edges')}: {graphStore.filteredEdges.length} / {graphStore.edges.length}</div>
-	</div>
-
-	<div class="divider my-1"></div>
-
-	<!-- Search Settings -->
+	<!-- Layout Settings -->
 	<div>
 		<h3 class="text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-3">
-			{t('filter.searchSettings')}
+			{t('layout.title')}
 		</h3>
-		<div class="space-y-3">
-			<div>
-				<div class="flex items-center justify-between mb-1">
-					<span class="text-xs text-base-content/70">{t('settings.searchThreshold')}</span>
-					<input
-						type="number"
-						class="input input-xs w-16 bg-white/[0.12] border-white/[0.18] text-right text-xs"
-						step="0.05"
-						min="0.1"
-						max="0.9"
-						bind:value={searchThreshold}
-						onchange={handleSaveThreshold}
-					/>
-				</div>
+		<div class="space-y-2">
+			<label class="flex items-center gap-2 text-xs text-base-content/60">
+				<span class="w-16 shrink-0">{t('layout.nodeSpacing')}</span>
 				<input
 					type="range"
-					class="range range-xs range-primary w-full"
-					min="0.1"
-					max="0.9"
-					step="0.05"
-					style="--range-fill: {((searchThreshold - 0.1) / (0.9 - 0.1)) * 100}%;"
-					bind:value={searchThreshold}
-					onchange={handleSaveThreshold}
+					min="5" max="100" step="5"
+					value={layoutParams.nodeSpacing}
+					oninput={(e) => onParamChange('nodeSpacing', Number(e.currentTarget.value))}
+					class="range range-xs range-primary flex-1"
+					style="--range-fill: {fillPercent(layoutParams.nodeSpacing, 5, 100)}%;"
 				/>
-			</div>
-			<div>
-				<div class="flex items-center justify-between mb-1">
-					<span class="text-xs text-base-content/70">{t('settings.searchTopK')}</span>
-					<input
-						type="number"
-						class="input input-xs w-16 bg-white/[0.12] border-white/[0.18] text-right text-xs"
-						step="1"
-						min="1"
-						max="50"
-						bind:value={searchTopK}
-						onchange={handleSaveTopK}
-					/>
-				</div>
+				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{layoutParams.nodeSpacing}</span>
+			</label>
+			<label class="flex items-center gap-2 text-xs text-base-content/60">
+				<span class="w-16 shrink-0">{t('layout.edgeLength')}</span>
 				<input
 					type="range"
-					class="range range-xs range-primary w-full"
-					min="1"
-					max="50"
-					step="1"
-					style="--range-fill: {((searchTopK - 1) / (50 - 1)) * 100}%;"
-					bind:value={searchTopK}
-					onchange={handleSaveTopK}
+					min="30" max="300" step="10"
+					value={layoutParams.edgeLength}
+					oninput={(e) => onParamChange('edgeLength', Number(e.currentTarget.value))}
+					class="range range-xs range-primary flex-1"
+					style="--range-fill: {fillPercent(layoutParams.edgeLength, 30, 300)}%;"
 				/>
+				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{layoutParams.edgeLength}</span>
+			</label>
+			<label class="flex items-center gap-2 text-xs text-base-content/60">
+				<span class="w-16 shrink-0">{t('layout.convergence')}</span>
+				<input
+					type="range"
+					min="0" max="3" step="1"
+					value={convergenceIndex}
+					oninput={(e) => handleConvergenceChange(Number(e.currentTarget.value))}
+					class="range range-xs range-primary flex-1"
+					style="--range-fill: {fillPercent(convergenceIndex, 0, 3)}%;"
+				/>
+				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{convergenceIndex + 1}/4</span>
+			</label>
+			<label class="flex items-center gap-2 text-xs text-base-content/60">
+				<span class="w-16 shrink-0">{t('layout.spreadForce')}</span>
+				<input
+					type="range"
+					min="1" max="30" step="1"
+					value={layoutParams.edgeSymDiffLength}
+					oninput={(e) => onParamChange('edgeSymDiffLength', Number(e.currentTarget.value))}
+					class="range range-xs range-primary flex-1"
+					style="--range-fill: {fillPercent(layoutParams.edgeSymDiffLength, 1, 30)}%;"
+				/>
+				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{layoutParams.edgeSymDiffLength}</span>
+			</label>
+			<label class="flex items-center gap-2 text-xs text-base-content/60">
+				<span class="w-16 shrink-0">{t('layout.zoomSensitivity')}</span>
+				<input
+					type="range"
+					min="0.05" max="1" step="0.05"
+					value={wheelSensitivity}
+					oninput={(e) => onWheelSensitivityChange(Number(e.currentTarget.value))}
+					class="range range-xs range-primary flex-1"
+					style="--range-fill: {fillPercent(wheelSensitivity, 0.05, 1)}%;"
+				/>
+				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{wheelSensitivity.toFixed(2)}</span>
+			</label>
+			<div class="flex justify-end pt-1">
+				<button
+					class="btn btn-xs btn-ghost text-base-content/50 hover:text-base-content/80"
+					onclick={onReset}
+				>
+					{t('layout.reset')}
+				</button>
 			</div>
 		</div>
 	</div>
-
-	<div class="divider my-1"></div>
-
-	<RecentSearches />
 </div>

@@ -4,9 +4,8 @@
 	import * as pipelineCmd from '$lib/commands/pipeline';
 	import type { PipelineStatus } from '$lib/commands/pipeline';
 	import { t } from '$lib/i18n/index.svelte';
-	import { getLocale } from '$lib/i18n/index.svelte';
-
-	const localeTag: Record<string, string> = { ko: 'ko-KR', en: 'en-US' };
+	import { getDateFormat, getTimeFormat } from '$lib/stores/settings.svelte';
+	import { formatDateTime } from '$lib/utils/datetime';
 
 	let status = $state<PipelineStatus | null>(null);
 	let now = $state(Date.now());
@@ -26,12 +25,7 @@
 		const rh = Math.floor(diff / 3_600_000);
 		const rm = Math.floor((diff % 3_600_000) / 60_000);
 
-		const tag = localeTag[getLocale()] ?? 'ko-KR';
-		const nextDate = new Date(status.nextRun);
-		const nextLabel =
-			nextDate.toLocaleDateString(tag, { month: 'short', day: 'numeric' }) +
-			' ' +
-			nextDate.toLocaleTimeString(tag, { hour: '2-digit', minute: '2-digit', hour12: false });
+		const nextLabel = formatDateTime(status.nextRun, getDateFormat(), getTimeFormat());
 
 		return { progress, rh, rm, nextLabel };
 	});

@@ -21,8 +21,10 @@
 		handleContextMenuAction,
 		type ContextMenuState
 	} from '$lib/graph/cytoscape-events';
+	import { getSetting, setSetting } from '$lib/commands/settings';
 	import ContextMenu from './ContextMenu.svelte';
 	import SearchInput from './SearchInput.svelte';
+	import RecentSearches from './RecentSearches.svelte';
 	import SidePanel from './SidePanel.svelte';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 	import BottomBar from './BottomBar.svelte';
@@ -43,7 +45,24 @@
 
 	let layoutParams = $state<LayoutParams>({ ...defaultLayoutParams });
 	let wheelSensitivity = $state(DEFAULT_WHEEL_SENSITIVITY);
+	let showHistory = $state(false);
+	let showSearchSettings = $state(false);
+	let searchThreshold = $state(0.3);
+	let searchTopK = $state(10);
 	let prevElementIds = new Set<string>();
+
+	onMount(async () => {
+		try {
+			const [thresholdVal, topKVal] = await Promise.all([
+				getSetting('search_threshold'),
+				getSetting('search_top_k')
+			]);
+			if (thresholdVal) searchThreshold = parseFloat(thresholdVal);
+			if (topKVal) searchTopK = parseInt(topKVal);
+		} catch {
+			// ignore
+		}
+	});
 
 	function startLayout() {
 		if (!cy) return;
@@ -241,23 +260,90 @@
 	</div>
 
 	<!-- Floating search - top right -->
-	<div class="absolute top-3 right-3 z-20 flex items-center gap-1.5">
-		{#if graphStore.searchMatchIds.size > 0}
+	<div class="absolute top-3 right-3 z-20">
+		<div class="flex items-center gap-1.5">
+			{#if graphStore.searchMatchIds.size > 0}
+				<button
+					class="p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-base-content/40 hover:text-base-content/80 hover:border-white/20 transition-colors"
+					onclick={() => graphStore.clearSearchMatches()}
+					title={t('graph.clearHighlights')}
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-3.5">
+						<path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
+					</svg>
+				</button>
+			{/if}
+			<SearchInput onfocus={focusNode} />
 			<button
-				class="p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-base-content/40 hover:text-base-content/80 hover:border-white/20 transition-colors"
-				onclick={() => graphStore.clearSearchMatches()}
-				title={t('graph.clearHighlights')}
+				class="p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 transition-colors {showHistory ? 'text-primary border-primary/30' : 'text-base-content/40 hover:text-base-content/80 hover:border-white/20'}"
+				onclick={() => { showHistory = !showHistory; showSearchSettings = false; }}
+				title={t('search.recent')}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-3.5">
-					<path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
+					<path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd" />
 				</svg>
 			</button>
+			<button
+				class="p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 transition-colors {showSearchSettings ? 'text-primary border-primary/30' : 'text-base-content/40 hover:text-base-content/80 hover:border-white/20'}"
+				onclick={() => { showSearchSettings = !showSearchSettings; showHistory = false; }}
+				title={t('filter.searchSettings')}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-3.5">
+					<path d="M6.455 1.45A.5.5 0 0 1 6.952 1h2.096a.5.5 0 0 1 .497.45l.186 1.858a4.996 4.996 0 0 1 1.466.848l1.703-.769a.5.5 0 0 1 .639.206l1.048 1.814a.5.5 0 0 1-.142.656l-1.517 1.09a5.026 5.026 0 0 1 0 1.694l1.517 1.09a.5.5 0 0 1 .142.656l-1.048 1.814a.5.5 0 0 1-.639.206l-1.703-.769c-.433.36-.928.649-1.466.848l-.186 1.858a.5.5 0 0 1-.497.45H6.952a.5.5 0 0 1-.497-.45l-.186-1.858a4.993 4.993 0 0 1-1.466-.848l-1.703.769a.5.5 0 0 1-.639-.206L1.413 9.814a.5.5 0 0 1 .142-.656l1.517-1.09a5.026 5.026 0 0 1 0-1.694l-1.517-1.09a.5.5 0 0 1-.142-.656L2.461 2.814a.5.5 0 0 1 .639-.206l1.703.769c.433-.36.928-.649 1.466-.848l.186-1.858ZM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+				</svg>
+			</button>
+		</div>
+		{#if showSearchSettings}
+			<div class="absolute top-full right-0 mt-1.5 w-64 bg-black/80 backdrop-blur-md rounded-lg border border-white/[0.08] p-3 shadow-xl space-y-2">
+				<div>
+					<div class="flex items-center justify-between mb-1">
+						<span class="text-xs text-base-content/70">{t('settings.searchThreshold')}</span>
+						<span class="text-xs text-base-content/50 tabular-nums">{searchThreshold}</span>
+					</div>
+					<input
+						type="range"
+						class="range range-xs range-primary w-full"
+						min="0.1"
+						max="0.9"
+						step="0.05"
+						style="--range-fill: {((searchThreshold - 0.1) / (0.9 - 0.1)) * 100}%;"
+						bind:value={searchThreshold}
+						onchange={() => setSetting('search_threshold', String(searchThreshold))}
+					/>
+				</div>
+				<div>
+					<div class="flex items-center justify-between mb-1">
+						<span class="text-xs text-base-content/70">{t('settings.searchTopK')}</span>
+						<span class="text-xs text-base-content/50 tabular-nums">{searchTopK}</span>
+					</div>
+					<input
+						type="range"
+						class="range range-xs range-primary w-full"
+						min="1"
+						max="50"
+						step="1"
+						style="--range-fill: {((searchTopK - 1) / (50 - 1)) * 100}%;"
+						bind:value={searchTopK}
+						onchange={() => setSetting('search_top_k', String(searchTopK))}
+					/>
+				</div>
+			</div>
 		{/if}
-		<SearchInput onfocus={focusNode} />
+		{#if showHistory}
+			<div class="absolute top-full right-0 mt-1.5 w-64 bg-black/80 backdrop-blur-md rounded-lg border border-white/[0.08] p-3 shadow-xl">
+				<RecentSearches />
+			</div>
+		{/if}
 	</div>
 
 	<!-- Side panel -->
-	<SidePanel />
+	<SidePanel
+		{layoutParams}
+		{wheelSensitivity}
+		onParamChange={updateLayoutParam}
+		onWheelSensitivityChange={updateWheelSensitivity}
+		onReset={resetLayoutParams}
+	/>
 
 	<ContextMenu
 		state={contextMenu}
@@ -269,12 +355,6 @@
 
 	<!-- Bottom bar -->
 	<div class="absolute bottom-0 left-0 right-0 z-40">
-		<BottomBar
-			{layoutParams}
-			{wheelSensitivity}
-			onParamChange={updateLayoutParam}
-			onWheelSensitivityChange={updateWheelSensitivity}
-			onReset={resetLayoutParams}
-		/>
+		<BottomBar />
 	</div>
 </div>

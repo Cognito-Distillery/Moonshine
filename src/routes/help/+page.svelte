@@ -38,8 +38,12 @@
 
 	const graphControls: { labelKey: MessageKey; descKey: MessageKey }[] = [
 		{ labelKey: 'help.graph.click.label', descKey: 'help.graph.click.desc' },
+		{ labelKey: 'help.graph.dblclick.label', descKey: 'help.graph.dblclick.desc' },
 		{ labelKey: 'help.graph.rightClick.label', descKey: 'help.graph.rightClick.desc' },
 		{ labelKey: 'help.graph.filter.label', descKey: 'help.graph.filter.desc' },
+		{ labelKey: 'help.graph.layout.label', descKey: 'help.graph.layout.desc' },
+		{ labelKey: 'help.graph.searchSettings.label', descKey: 'help.graph.searchSettings.desc' },
+		{ labelKey: 'help.graph.history.label', descKey: 'help.graph.history.desc' },
 		{ labelKey: 'help.graph.highlight.label', descKey: 'help.graph.highlight.desc' }
 	];
 

@@ -172,6 +172,14 @@ const ko = {
 	'help.graph.highlight': '<b>하이라이트 초기화</b> — 검색 결과 강조를 해제하려면 검색창 왼쪽의 X 버튼을 누르세요.',
 	'help.graph.highlight.label': '하이라이트 초기화',
 	'help.graph.highlight.desc': '검색 결과 강조를 해제하려면 검색창 왼쪽의 X 버튼을 누르세요.',
+	'help.graph.dblclick.label': '더블클릭',
+	'help.graph.dblclick.desc': '노드를 더블클릭하면 연결된 이웃 노드를 그래프에 확장합니다.',
+	'help.graph.layout.label': '레이아웃 설정',
+	'help.graph.layout.desc': '좌측 패널에서 노드 간격, 엣지 길이, 수렴 기준, 퍼짐 강도, 줌 민감도를 조절합니다.',
+	'help.graph.searchSettings.label': '검색 설정',
+	'help.graph.searchSettings.desc': '검색창 우측 톱니 버튼으로 자연어 검색의 유사도 기준과 최대 결과 수를 조절합니다.',
+	'help.graph.history.label': '검색 히스토리',
+	'help.graph.history.desc': '검색창 우측 시계 버튼으로 최근 자연어 검색 기록을 확인하고 다시 실행할 수 있습니다.',
 	'help.floatingMemo': '플로팅 메모',
 	'help.floatingMemo.desc': '메인 앱을 전환하지 않고 빠르게 생각을 기록하는 작은 창입니다. 시스템 트레이에서 접근하거나 단축키로 호출할 수 있습니다.',
 	'help.shortcuts': '단축키',
@@ -336,15 +344,15 @@ const ko = {
 	'graph.clearHighlights': '하이라이트 초기화',
 
 	// Search cache
-	'search.recent': '최근 검색',
-	'search.noRecent': '최근 검색 없음',
+	'search.recent': '최근 자연어 검색',
+	'search.noRecent': '최근 자연어 검색 없음',
 	'search.cached': '캐시됨',
 
 	// Similarity settings
 	'settings.similarity': '유사도 설정',
 	'settings.pipelineThreshold': '파이프라인 유사도 기준',
 	'settings.pipelineThresholdDesc': '관계를 생성할 최소 유사도입니다. 다음 파이프라인 실행부터 적용됩니다.',
-	'settings.searchThreshold': '검색 유사도 기준',
+	'settings.searchThreshold': '자연어 검색 유사도',
 	'settings.searchThresholdDesc': '검색 결과에 포함할 최소 유사도입니다. 즉시 적용됩니다.',
 	'settings.pipelineTopK': '매시당 비교 후보 수',
 	'settings.pipelineTopKDesc': '매시 하나당 유사한 매시를 최대 몇 개까지 찾아 AI에 넘길지 결정합니다. 다음 파이프라인 실행부터 적용됩니다.',
@@ -367,6 +375,20 @@ const ko = {
 	'layout.spreadForce': '퍼짐 강도',
 	'layout.zoomSensitivity': '줌 민감도',
 	'layout.reset': '초기화',
+
+	// Date & Time format
+	'settings.dateTimeFormat': '날짜 및 시간 형식',
+	'settings.dateFormat': '날짜 형식',
+	'settings.timeFormat': '시간 형식',
+	'settings.preview': '미리보기',
+	'settings.dateFormat.short': '짧게 (2월 15일)',
+	'settings.dateFormat.medium': '보통 (2026년 2월 15일)',
+	'settings.dateFormat.iso': 'ISO (2026-02-15)',
+	'settings.dateFormat.slash': '슬래시 (02/15/2026)',
+	'settings.dateFormat.dot': '점 (2026.02.15)',
+	'settings.timeFormat.24h': '24시간 (14:30)',
+	'settings.timeFormat.12h': '12시간 (오후 2:30)',
+	'settings.timeFormat.24h-sec': '24시간+초 (14:30:45)',
 
 	// Floating
 	'floating.title': '빠른 매싱'

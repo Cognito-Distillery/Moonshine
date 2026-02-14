@@ -1,3 +1,5 @@
+import type { DateFormatId, TimeFormatId } from '$lib/utils/datetime';
+
 export type SidebarPosition = 'left' | 'right' | 'top' | 'bottom';
 export type ViewMode = 'card' | 'list';
 
@@ -6,17 +8,26 @@ const STORAGE_KEY = 'moonshine-settings';
 interface Settings {
 	sidebarPosition: SidebarPosition;
 	viewMode: ViewMode;
+	dateFormat: DateFormatId;
+	timeFormat: TimeFormatId;
 }
 
+const DEFAULTS: Settings = {
+	sidebarPosition: 'left',
+	viewMode: 'list',
+	dateFormat: 'medium',
+	timeFormat: '24h'
+};
+
 function loadSettings(): Settings {
-	if (typeof localStorage === 'undefined') return { sidebarPosition: 'left', viewMode: 'list' };
+	if (typeof localStorage === 'undefined') return { ...DEFAULTS };
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
-		if (raw) return JSON.parse(raw);
+		if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
 	} catch {
 		// ignore
 	}
-	return { sidebarPosition: 'left', viewMode: 'list' };
+	return { ...DEFAULTS };
 }
 
 function saveSettings(settings: Settings) {
@@ -28,6 +39,12 @@ const initial = loadSettings();
 
 let sidebarPosition = $state<SidebarPosition>(initial.sidebarPosition);
 let viewMode = $state<ViewMode>(initial.viewMode);
+let dateFormat = $state<DateFormatId>(initial.dateFormat);
+let timeFormat = $state<TimeFormatId>(initial.timeFormat);
+
+function save() {
+	saveSettings({ sidebarPosition, viewMode, dateFormat, timeFormat });
+}
 
 export function getSidebarPosition() {
 	return sidebarPosition;
@@ -35,7 +52,7 @@ export function getSidebarPosition() {
 
 export function setSidebarPosition(pos: SidebarPosition) {
 	sidebarPosition = pos;
-	saveSettings({ sidebarPosition, viewMode });
+	save();
 }
 
 export function isHorizontal() {
@@ -48,5 +65,23 @@ export function getViewMode() {
 
 export function setViewMode(mode: ViewMode) {
 	viewMode = mode;
-	saveSettings({ sidebarPosition, viewMode });
+	save();
+}
+
+export function getDateFormat(): DateFormatId {
+	return dateFormat;
+}
+
+export function setDateFormat(fmt: DateFormatId) {
+	dateFormat = fmt;
+	save();
+}
+
+export function getTimeFormat(): TimeFormatId {
+	return timeFormat;
+}
+
+export function setTimeFormat(fmt: TimeFormatId) {
+	timeFormat = fmt;
+	save();
 }

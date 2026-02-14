@@ -2,10 +2,11 @@
 	import type { Mash, MashType } from '$lib/types';
 	import { MashStatus } from '$lib/types';
 	import type { ViewMode } from '$lib/stores/settings.svelte';
+	import { getDateFormat, getTimeFormat } from '$lib/stores/settings.svelte';
 	import { deleteMash, setMashStatus, updateMash, loadMashes } from '$lib/stores/mashes.svelte';
 	import { t } from '$lib/i18n/index.svelte';
-	import { getLocale } from '$lib/i18n/index.svelte';
 	import type { MessageKey } from '$lib/i18n/index.svelte';
+	import { formatDateTime } from '$lib/utils/datetime';
 
 	let {
 		mash,
@@ -64,17 +65,6 @@
 		'인사이트': 'border-success/30',
 		'질문': 'border-info/30'
 	};
-
-	const localeTag: Record<string, string> = { ko: 'ko-KR', en: 'en-US' };
-
-	function formatDate(ts: number): string {
-		return new Date(ts).toLocaleDateString(localeTag[getLocale()] ?? 'ko-KR', {
-			month: 'short',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
 
 	function typeLabel(type: MashType): string {
 		return t(`type.${type}` as MessageKey);
@@ -238,7 +228,7 @@
 		{/if}
 
 		<div class="flex items-center justify-between mt-auto pt-1">
-			<span class="text-xs text-base-content/25">{formatDate(mash.createdAt)}</span>
+			<span class="text-xs text-base-content/25">{formatDateTime(mash.createdAt, getDateFormat(), getTimeFormat())}</span>
 		</div>
 	</article>
 {:else}
@@ -294,7 +284,7 @@
 						</svg>
 					</button>
 				{/if}
-				<span class="text-xs text-base-content/30">{formatDate(mash.createdAt)}</span>
+				<span class="text-xs text-base-content/30">{formatDateTime(mash.createdAt, getDateFormat(), getTimeFormat())}</span>
 			</div>
 		</div>
 

@@ -16,6 +16,7 @@
     "core:window:allow-set-focus",
     "core:window:allow-is-visible",
     "core:window:allow-unminimize",
-    "core:tray:default"
+    "core:tray:default",
+    "core:window:allow-start-dragging"
   ]
 }
