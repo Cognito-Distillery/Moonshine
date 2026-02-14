@@ -76,6 +76,16 @@ pub struct PipelineStatus {
     pub jarred_count: u32,
     pub on_still_count: u32,
     pub running: bool,
+    pub progress: Option<PipelineProgress>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PipelineProgress {
+    pub phase: String,
+    pub step: String,
+    pub current: u32,
+    pub total: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

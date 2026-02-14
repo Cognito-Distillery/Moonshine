@@ -220,6 +220,7 @@ pub fn run() {
             commands::settings::switch_embedding_provider,
             commands::settings::switch_embedding_model,
             commands::settings::switch_chat_model,
+            commands::settings::reextract_relationships,
             // Pipeline
             commands::pipeline::trigger_pipeline,
             commands::pipeline::set_pipeline_interval,

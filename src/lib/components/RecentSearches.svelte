@@ -81,7 +81,7 @@
 	{#if searches.length === 0}
 		<p class="text-xs text-base-content/30">{t('search.noRecent')}</p>
 	{:else}
-		<div class="space-y-0.5 max-h-48 overflow-y-auto">
+		<div class="space-y-0.5 max-h-48 overflow-y-auto pr-2">
 			{#each searches as item (item.id)}
 				<div
 					role="button"

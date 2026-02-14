@@ -68,8 +68,8 @@ pub fn get_pipeline_status(
     };
 
     let next_run = scheduler_state.next_run();
-
     let running = scheduler_state.is_running();
+    let progress = scheduler_state.get_progress();
 
     Ok(PipelineStatus {
         last_run,
@@ -79,5 +79,6 @@ pub fn get_pipeline_status(
         jarred_count,
         on_still_count,
         running,
+        progress,
     })
 }
