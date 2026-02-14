@@ -1,6 +1,6 @@
 [package]
 name = "moonshine"
-version = "0.1.1"
+version = "0.1.2"
 description = "Distill thoughts into aged knowledge."
 authors = ["Cognito-Distillery"]
 license = "MIT"
