@@ -23,11 +23,12 @@
 	];
 
 	const settingsItems: { labelKey: MessageKey; descKey: MessageKey }[] = [
-		{ labelKey: 'help.settings.api.label', descKey: 'help.settings.api.desc' },
 		{ labelKey: 'help.settings.pipeline.label', descKey: 'help.settings.pipeline.desc' },
+		{ labelKey: 'help.settings.api.label', descKey: 'help.settings.api.desc' },
 		{ labelKey: 'help.settings.sidebar.label', descKey: 'help.settings.sidebar.desc' },
-		{ labelKey: 'help.settings.password.label', descKey: 'help.settings.password.desc' },
-		{ labelKey: 'help.settings.lang.label', descKey: 'help.settings.lang.desc' }
+		{ labelKey: 'help.settings.lang.label', descKey: 'help.settings.lang.desc' },
+		{ labelKey: 'help.settings.datetime.label', descKey: 'help.settings.datetime.desc' },
+		{ labelKey: 'help.settings.password.label', descKey: 'help.settings.password.desc' }
 	];
 
 	const searchModes: { labelKey: MessageKey; descKey: MessageKey }[] = [
