@@ -172,6 +172,25 @@ System Settings > Shortcuts > Custom Shortcuts > Add new shortcut with:
 
 ---
 
+## MCP Server
+
+Access your knowledge graph from AI assistants like Claude, ChatGPT, and Gemini using the [Moonshine MCP Server](https://github.com/Cognito-Distillery/Moonshine-MCP).
+
+Search, browse, and edit mashes and relationships through natural conversation — no need to open the app.
+
+```json
+{
+  "mcpServers": {
+    "moonshine": {
+      "command": "npx",
+      "args": ["@cognito-distillery/moonshine-mcp"]
+    }
+  }
+}
+```
+
+---
+
 ## Development
 
 See **[Development Guide](docs/development_guide.md)** for tech stack, build instructions, and project structure.

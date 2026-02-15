@@ -172,6 +172,25 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/or
 
 ---
 
+## MCP 서버
+
+[Moonshine MCP Server](https://github.com/Cognito-Distillery/Moonshine-MCP)를 사용하면 Claude, ChatGPT, Gemini 등 AI 어시스턴트에서 지식 그래프에 직접 접근할 수 있습니다.
+
+자연어 대화로 매시와 관계를 검색, 탐색, 편집할 수 있으며 앱을 열 필요가 없습니다.
+
+```json
+{
+  "mcpServers": {
+    "moonshine": {
+      "command": "npx",
+      "args": ["@cognito-distillery/moonshine-mcp"]
+    }
+  }
+}
+```
+
+---
+
 ## 개발
 
 **[개발 가이드](development_guide_ko.md)**에서 기술 스택, 빌드 방법, 프로젝트 구조를 확인하세요.
