@@ -30,3 +30,7 @@ export function setMashStatus(id: string, status: string): Promise<void> {
 export function searchMashes(query: string): Promise<Mash[]> {
 	return invoke<Mash[]>('search_keyword', { query });
 }
+
+export function addMashWithAI(text: string): Promise<Mash> {
+	return invoke<Mash>('add_mash_with_ai', { text });
+}

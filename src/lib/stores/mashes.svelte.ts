@@ -67,6 +67,16 @@ export async function deleteMash(id: string) {
 	}
 }
 
+export async function addMashWithAI(text: string) {
+	try {
+		await cmd.addMashWithAI(text);
+		await loadMashes(MashStatus.MASH_TUN);
+	} catch (e) {
+		showToast(String(e));
+		throw e;
+	}
+}
+
 export async function updateMash(
 	id: string,
 	data: Partial<Pick<Mash, 'type' | 'summary' | 'context' | 'memo'>>

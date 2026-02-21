@@ -117,6 +117,7 @@
 				{@html t('help.step1.desc')}
 			</p>
 			<h3 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('help.mashTypes')}</h3>
+			<p class="text-sm text-base-content/60">{t('help.mashTypes.desc')}</p>
 			<div class="grid grid-cols-2 gap-3">
 				{#each mashTypes as mt}
 					<div class="flex items-center gap-2">

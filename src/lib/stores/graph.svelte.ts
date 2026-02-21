@@ -26,13 +26,8 @@ function createGraphStore() {
 		})
 	);
 
-	const connectedNodeIds = $derived(
-		new Set(filteredEdges.flatMap((e) => [e.sourceId, e.targetId]))
-	);
-
 	const cytoscapeElements = $derived<CytoscapeElement[]>([
 		...nodes
-			.filter((n) => filteredEdges.length === 0 || connectedNodeIds.has(n.id))
 			.map((n) => ({
 				data: {
 					id: n.id,

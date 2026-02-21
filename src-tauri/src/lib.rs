@@ -189,6 +189,7 @@ pub fn run() {
             // Mash CRUD
             commands::mashes::get_mashes_by_status,
             commands::mashes::add_mash,
+            commands::mashes::add_mash_with_ai,
             commands::mashes::delete_mash,
             commands::mashes::update_mash,
             commands::mashes::set_mash_status,
