@@ -27,3 +27,7 @@ export function switchChatModel(model: string): Promise<void> {
 export function reextractRelationships(): Promise<number> {
 	return invoke<number>('reextract_relationships');
 }
+
+export function reembedAll(): Promise<number> {
+	return invoke<number>('reembed_all');
+}

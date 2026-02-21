@@ -205,6 +205,20 @@ pub async fn reextract_mashes(
     let total = targets.len() as u32;
     log::info!("Re-extracting relationships for {} mashes", total);
 
+    // Delete AI edges only for RE_EXTRACT target mashes (not all edges globally)
+    {
+        let conn = conn.lock().map_err(|e| e.to_string())?;
+        let deleted = conn
+            .execute(
+                "DELETE FROM edges WHERE source = 'ai'
+                 AND (source_id IN (SELECT id FROM mashes WHERE status = 'RE_EXTRACT')
+                   OR target_id IN (SELECT id FROM mashes WHERE status = 'RE_EXTRACT'))",
+                [],
+            )
+            .map_err(|e| e.to_string())?;
+        log::info!("Re-extract: deleted {} AI edges for target mashes", deleted);
+    }
+
     update_progress(progress, "re_extract", "similarity", 0, total);
 
     let (threshold, pipeline_top_k) = {

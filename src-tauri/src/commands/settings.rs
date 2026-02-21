@@ -114,9 +114,56 @@ pub async fn reextract_relationships(
 ) -> Result<u32, String> {
     let reset_count = {
         let conn = db_state.0.lock().map_err(|e| e.to_string())?;
-        // Delete AI-generated edges only; human-created edges are preserved
-        db::edges::delete_ai_edges(&conn)?;
+
+        let jarred_count: u32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM mashes WHERE status = 'JARRED'",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+
+        if jarred_count == 0 {
+            let in_flight: u32 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM mashes WHERE status IN ('RE_EMBED', 'DISTILLED', 'ON_STILL')",
+                    [],
+                    |row| row.get(0),
+                )
+                .map_err(|e| e.to_string())?;
+
+            if in_flight > 0 {
+                return Err(
+                    "파이프라인 처리 중인 매시가 있습니다. 완료 후 다시 시도해 주세요.".to_string(),
+                );
+            }
+            return Ok(0);
+        }
+
+        // Edge deletion moved to pipeline reextract_mashes (per-mash, not global)
         db::mashes::reset_for_reextract(&conn)?
+    };
+
+    if reset_count > 0 {
+        if let Ok(config) = {
+            let conn = db_state.0.lock().map_err(|e| e.to_string())?;
+            resolve_embedding_config(&conn)
+        } {
+            let _ = scheduler_state.trigger_now(&db_state.0, &config).await;
+        }
+    }
+
+    Ok(reset_count)
+}
+
+#[tauri::command]
+pub async fn reembed_all(
+    db_state: State<'_, DbState>,
+    scheduler_state: State<'_, PipelineSchedulerState>,
+) -> Result<u32, String> {
+    let reset_count = {
+        let conn = db_state.0.lock().map_err(|e| e.to_string())?;
+        db::mashes::reset_for_reembed(&conn)?
     };
 
     if reset_count > 0 {

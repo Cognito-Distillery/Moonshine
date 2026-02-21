@@ -77,6 +77,8 @@
 	let reembedPendingAction = $state<(() => Promise<void>) | null>(null);
 	let reextractConfirmOpen = $state(false);
 	let reextractRunning = $state(false);
+	let reembedConfirmDirectOpen = $state(false);
+	let reembedRunning = $state(false);
 
 
 
@@ -283,6 +285,21 @@
 			showToast(String(e));
 		} finally {
 			reextractRunning = false;
+		}
+	}
+
+	async function handleConfirmReembedDirect() {
+		reembedConfirmDirectOpen = false;
+		reembedRunning = true;
+		startPolling();
+		try {
+			const count = await settingsCmd.reembedAll();
+			pipelineStatus = await pipelineCmd.getPipelineStatus();
+			showToast(t('settings.reembedDone').replace('{count}', String(count)), 'success');
+		} catch (e) {
+			showToast(String(e));
+		} finally {
+			reembedRunning = false;
 		}
 	}
 
@@ -916,6 +933,19 @@
 			{/if}
 		</div>
 
+		<button
+			class="btn btn-sm btn-outline btn-warning"
+			onclick={() => (reembedConfirmDirectOpen = true)}
+			disabled={reembedRunning || pipelineRunning || pipelineStatus?.running || providerSwitching || modelSwitching}
+		>
+			{#if reembedRunning}
+				<span class="loading loading-spinner loading-xs"></span>
+				{t('settings.reembedRunning')}
+			{:else}
+				{t('settings.reembedBtn')}
+			{/if}
+		</button>
+
 		<!-- Chat Model -->
 		<div class="flex flex-col gap-2">
 			<span class="text-sm font-medium">{t('settings.chatModel')}</span>
@@ -1164,5 +1194,44 @@
 		</div>
 		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 		<div class="modal-backdrop" onclick={() => (reextractConfirmOpen = false)}></div>
+	</div>
+{/if}
+
+<!-- Re-embed All Confirmation Modal -->
+{#if reembedConfirmDirectOpen}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal modal-open" onkeydown={(e) => e.key === 'Escape' && (reembedConfirmDirectOpen = false)}>
+		<div class="modal-box border border-base-300">
+			<h3 class="text-lg font-bold flex items-center gap-2">
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-warning" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+				</svg>
+				{t('settings.confirmReembed')}
+			</h3>
+			<ul class="py-4 space-y-2 text-sm">
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.confirmReembedMsg1')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-warning font-bold">&#8226;</span>
+					{t('settings.confirmReembedMsg2')}
+				</li>
+				<li class="flex gap-2">
+					<span class="text-success font-bold">&#8226;</span>
+					{t('settings.confirmReembedMsg3')}
+				</li>
+			</ul>
+			<div class="modal-action">
+				<button class="btn btn-sm btn-ghost" onclick={() => (reembedConfirmDirectOpen = false)}>
+					{t('common.cancel')}
+				</button>
+				<button class="btn btn-sm btn-warning" onclick={handleConfirmReembedDirect}>
+					{t('settings.confirmReembedProceed')}
+				</button>
+			</div>
+		</div>
+		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={() => (reembedConfirmDirectOpen = false)}></div>
 	</div>
 {/if}
