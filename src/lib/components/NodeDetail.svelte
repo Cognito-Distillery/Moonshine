@@ -35,6 +35,6 @@
 			</div>
 		{/if}
 
-		<div class="text-xs text-base-content/40">ID: {node.id}</div>
+		<div class="text-xs text-base-content/60">ID: {node.id}</div>
 	</div>
 {/if}

@@ -15,31 +15,12 @@
 	}
 
 	const activeClass = 'bg-primary/15 text-primary';
-	const inactiveClass = 'text-base-content/40 hover:text-base-content/70 hover:bg-white/[0.05]';
+	const inactiveClass = 'text-base-content/60 hover:text-base-content/70 hover:bg-base-content/[0.05]';
 </script>
 
 {#if isHorizontal()}
 	<nav class="h-12 border-b border-base-300 flex items-center justify-between px-5 shrink-0">
 		<div class="flex items-center gap-1">
-			<a href="/" class="mr-3" title="Moonshine">
-				<svg width="24" height="24" viewBox="0 0 200 200" fill="none">
-					<defs>
-						<linearGradient id="liqH" x1="100" y1="180" x2="100" y2="80" gradientUnits="userSpaceOnUse">
-							<stop offset="0%" stop-color="#C4D4E0" stop-opacity="0.3"/>
-							<stop offset="100%" stop-color="#C4D4E0" stop-opacity="0.05"/>
-						</linearGradient>
-					</defs>
-					<path d="M68 40 H132 V52 H68 Z" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
-					<path d="M72 52 V60 C72 65, 65 70, 65 80 V160 A 20 20 0 0 0 85 180 H115 A 20 20 0 0 0 135 160 V80 C135 70, 128 65, 128 60 V52" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
-					<path d="M72 60 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
-					<path d="M72 68 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
-					<path d="M68 115 Q 100 120, 132 115 V 160 A 17 17 0 0 1 115 177 H 85 A 17 17 0 0 1 68 160 Z" fill="url(#liqH)" stroke="none"/>
-					<path d="M100 70 A 22 22 0 1 1 88 110 A 18 18 0 1 0 100 70 Z" fill="#E2E8F0"/>
-					<path d="M130 85 V 105" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
-					<path d="M70 160 V 170" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
-				</svg>
-			</a>
-
 			{#each links as link}
 				<a
 					href={link.href}
@@ -92,25 +73,6 @@
 {:else}
 	<nav class="w-14 h-screen border-r border-base-300 flex flex-col items-center justify-between py-5 shrink-0">
 		<div class="flex flex-col items-center gap-1">
-			<a href="/" class="mb-4" title="Moonshine">
-				<svg width="28" height="28" viewBox="0 0 200 200" fill="none">
-					<defs>
-						<linearGradient id="liqV" x1="100" y1="180" x2="100" y2="80" gradientUnits="userSpaceOnUse">
-							<stop offset="0%" stop-color="#C4D4E0" stop-opacity="0.3"/>
-							<stop offset="100%" stop-color="#C4D4E0" stop-opacity="0.05"/>
-						</linearGradient>
-					</defs>
-					<path d="M68 40 H132 V52 H68 Z" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
-					<path d="M72 52 V60 C72 65, 65 70, 65 80 V160 A 20 20 0 0 0 85 180 H115 A 20 20 0 0 0 135 160 V80 C135 70, 128 65, 128 60 V52" stroke="#C4D4E0" stroke-width="3" stroke-linecap="round" fill="none"/>
-					<path d="M72 60 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
-					<path d="M72 68 H128" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.5"/>
-					<path d="M68 115 Q 100 120, 132 115 V 160 A 17 17 0 0 1 115 177 H 85 A 17 17 0 0 1 68 160 Z" fill="url(#liqV)" stroke="none"/>
-					<path d="M100 70 A 22 22 0 1 1 88 110 A 18 18 0 1 0 100 70 Z" fill="#E2E8F0"/>
-					<path d="M130 85 V 105" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
-					<path d="M70 160 V 170" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
-				</svg>
-			</a>
-
 			{#each links as link}
 				<a
 					href={link.href}

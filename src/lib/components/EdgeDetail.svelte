@@ -50,14 +50,14 @@
 				<span class="text-xs text-base-content/60">{t('edge.from')}:</span>
 				<div class="font-medium">{nodeLabel(edge.sourceId)}</div>
 			</div>
-			<div class="text-center text-base-content/40">&rarr;</div>
+			<div class="text-center text-base-content/60">&rarr;</div>
 			<div>
 				<span class="text-xs text-base-content/60">{t('edge.to')}:</span>
 				<div class="font-medium">{nodeLabel(edge.targetId)}</div>
 			</div>
 		</div>
 
-		<div class="space-y-1 text-xs text-base-content/50">
+		<div class="space-y-1 text-xs text-base-content/65">
 			{#if edge.source}
 				<div>{t('edge.source')}: <span class="badge badge-xs">{edge.source}</span></div>
 			{/if}

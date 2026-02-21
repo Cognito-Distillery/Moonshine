@@ -53,19 +53,19 @@
 <div class="max-w-2xl mx-auto flex flex-col gap-8">
 	<div>
 		<h1 class="text-2xl font-semibold tracking-tight">{t('still.title')}</h1>
-		<p class="text-sm text-base-content/40 mt-1">{t('still.subtitle')}</p>
+		<p class="text-sm text-base-content/60 mt-1">{t('still.subtitle')}</p>
 	</div>
 
 	{#if timer}
 		<div class="flex items-center gap-3">
-			<span class="text-[11px] text-base-content/30 shrink-0">{t('still.nextPipeline')}</span>
+			<span class="text-[11px] text-base-content/45 shrink-0">{t('still.nextPipeline')}</span>
 			<div class="flex-1 h-1 rounded-full bg-base-content/[0.08] overflow-hidden">
 				<div
 					class="h-full rounded-full bg-primary transition-[width] duration-500"
 					style="width: {timer.progress * 100}%"
 				></div>
 			</div>
-			<span class="text-[11px] text-base-content/40 font-medium tabular-nums shrink-0">
+			<span class="text-[11px] text-base-content/60 font-medium tabular-nums shrink-0">
 				{#if timer.rh > 0}
 					{timer.rh}{t('still.hours')} {timer.rm}{t('still.minutes')} ({timer.nextLabel})
 				{:else if timer.rm > 0}

@@ -1,4 +1,5 @@
-import { cytoscapeStylesheet } from './cytoscape-styles';
+import { getCytoscapeStylesheet } from './cytoscape-styles';
+import type { ThemeId } from '$lib/stores/settings.svelte';
 
 export interface LayoutParams {
 	nodeSpacing: number;
@@ -37,12 +38,14 @@ export function createCytoscapeLayout(overrides?: Partial<LayoutParams>) {
 
 export const DEFAULT_WHEEL_SENSITIVITY = 0.25;
 
-export const defaultCytoscapeOptions = {
-	style: cytoscapeStylesheet,
-	layout: { name: 'preset' },
-	minZoom: 0.1,
-	maxZoom: 4,
-	wheelSensitivity: 0.25,
-	boxSelectionEnabled: false,
-	pixelRatio: 'auto' as const
-};
+export function createCytoscapeOptions(themeId: ThemeId) {
+	return {
+		style: getCytoscapeStylesheet(themeId),
+		layout: { name: 'preset' },
+		minZoom: 0.1,
+		maxZoom: 4,
+		wheelSensitivity: 0.25,
+		boxSelectionEnabled: false,
+		pixelRatio: 'auto' as const
+	};
+}

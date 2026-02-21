@@ -90,7 +90,7 @@
 		</label>
 		<select
 			id="edge-relation"
-			class="select select-sm w-full bg-white/[0.12] border-white/[0.18] focus:border-primary"
+			class="select select-sm w-full bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary"
 			bind:value={selectedRelationType}
 		>
 			{#each relationTypes as rt}

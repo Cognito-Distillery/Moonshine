@@ -40,7 +40,7 @@
 			<input
 				id="node-summary"
 				type="text"
-				class="input input-sm w-full bg-white/[0.12] border-white/[0.18] focus:border-primary"
+				class="input input-sm w-full bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary"
 				bind:value={summary}
 			/>
 		</div>
@@ -51,7 +51,7 @@
 			</label>
 			<textarea
 				id="node-context"
-				class="textarea textarea-sm w-full h-24 bg-white/[0.12] border-white/[0.18] focus:border-primary"
+				class="textarea textarea-sm w-full h-24 bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary"
 				bind:value={context}
 			></textarea>
 		</div>
@@ -62,7 +62,7 @@
 			</label>
 			<textarea
 				id="node-memo"
-				class="textarea textarea-sm w-full h-16 bg-white/[0.12] border-white/[0.18] focus:border-primary"
+				class="textarea textarea-sm w-full h-16 bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary"
 				bind:value={memo}
 			></textarea>
 		</div>

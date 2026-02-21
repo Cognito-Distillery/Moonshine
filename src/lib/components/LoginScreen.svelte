@@ -31,13 +31,13 @@
 				<path d="M70 160 V 170" stroke="#C4D4E0" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/>
 			</svg>
 			<h1 class="text-2xl font-bold tracking-tight">Moonshine</h1>
-			<p class="text-sm text-base-content/40 mt-1">{t('login.title')}</p>
+			<p class="text-sm text-base-content/60 mt-1">{t('login.title')}</p>
 		</div>
 
 		<form class="flex flex-col gap-3" onsubmit={handleLogin}>
 			<input
 				type="password"
-				class="input w-full bg-white/[0.12] border-white/[0.18] focus:border-primary placeholder:text-base-content/30"
+				class="input w-full bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary placeholder:text-base-content/45"
 				placeholder={t('login.password')}
 				bind:value={password}
 				required

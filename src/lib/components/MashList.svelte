@@ -29,14 +29,14 @@
 
 <div class="flex flex-col gap-4">
 	<div class="flex items-center gap-2">
-		<label class="input bg-white/[0.12] border-white/[0.18] flex items-center gap-2 focus-within:border-primary flex-1">
-			<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-base-content/25">
+		<label class="input bg-base-content/[0.08] border-base-content/[0.12] flex items-center gap-2 focus-within:border-primary flex-1">
+			<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-base-content/40">
 				<circle cx="11" cy="11" r="8"/>
 				<line x1="21" y1="21" x2="16.65" y2="16.65"/>
 			</svg>
 			<input
 				type="text"
-				class="grow bg-transparent placeholder:text-base-content/25"
+				class="grow bg-transparent placeholder:text-base-content/40"
 				placeholder={t('common.search')}
 				value={getSearchQuery()}
 				oninput={(e) => setSearchQuery(e.currentTarget.value)}
@@ -45,7 +45,7 @@
 
 		<div class="flex">
 			<button
-				class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors {getViewMode() === 'list' ? 'text-primary bg-primary/15' : 'text-base-content/40 hover:text-base-content/70 hover:bg-white/[0.05]'}"
+				class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors {getViewMode() === 'list' ? 'text-primary bg-primary/15' : 'text-base-content/60 hover:text-base-content/70 hover:bg-base-content/[0.05]'}"
 				title={t('list.listView')}
 				onclick={() => setViewMode('list')}
 			>
@@ -59,7 +59,7 @@
 				</svg>
 			</button>
 			<button
-				class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors {getViewMode() === 'card' ? 'text-primary bg-primary/15' : 'text-base-content/40 hover:text-base-content/70 hover:bg-white/[0.05]'}"
+				class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors {getViewMode() === 'card' ? 'text-primary bg-primary/15' : 'text-base-content/60 hover:text-base-content/70 hover:bg-base-content/[0.05]'}"
 				title={t('list.cardView')}
 				onclick={() => setViewMode('card')}
 			>
@@ -90,13 +90,13 @@
 	{#if displayMashes.length === 0}
 		<div class="flex flex-col items-center gap-3 py-16">
 			{#if getSearchQuery().trim()}
-				<p class="text-base-content/25 text-sm">{t('list.emptySearch')}</p>
+				<p class="text-base-content/40 text-sm">{t('list.emptySearch')}</p>
 			{:else if mode === 'still'}
-				<p class="text-base-content/25 text-sm">{t('list.emptyStill')}</p>
-				<a href="/mashes" class="btn btn-ghost btn-sm text-base-content/40">{t('list.ctaStill')}</a>
+				<p class="text-base-content/40 text-sm">{t('list.emptyStill')}</p>
+				<a href="/mashes" class="btn btn-ghost btn-sm text-base-content/60">{t('list.ctaStill')}</a>
 			{:else}
-				<p class="text-base-content/25 text-sm">{t('list.emptyMashes')}</p>
-				<a href="/" class="btn btn-ghost btn-sm text-base-content/40">{t('list.ctaMashes')}</a>
+				<p class="text-base-content/40 text-sm">{t('list.emptyMashes')}</p>
+				<a href="/" class="btn btn-ghost btn-sm text-base-content/60">{t('list.ctaMashes')}</a>
 			{/if}
 		</div>
 	{/if}

@@ -22,10 +22,10 @@
 </script>
 
 {#if status && (status.onStillCount > 0 || status.distilledCount > 0)}
-	<div class="text-[10px] text-base-content/30 px-1 py-0.5 flex items-center gap-1.5" title={t('settings.pipelineStats')}>
+	<div class="text-[10px] text-base-content/45 px-1 py-0.5 flex items-center gap-1.5" title={t('settings.pipelineStats')}>
 		<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse"></span>
 		<span>{t('settings.onStill')}: {status.onStillCount}</span>
-		<span class="text-base-content/15">|</span>
+		<span class="text-base-content/25">|</span>
 		<span>{t('settings.jarred')}: {status.jarredCount}</span>
 	</div>
 {/if}

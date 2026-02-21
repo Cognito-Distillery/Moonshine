@@ -79,21 +79,21 @@
 		{t('search.recent')}
 	</h3>
 	{#if searches.length === 0}
-		<p class="text-xs text-base-content/30">{t('search.noRecent')}</p>
+		<p class="text-xs text-base-content/45">{t('search.noRecent')}</p>
 	{:else}
 		<div class="space-y-0.5 max-h-48 overflow-y-auto pr-2">
 			{#each searches as item (item.id)}
 				<div
 					role="button"
 					tabindex="0"
-					class="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-white/[0.08] flex items-center gap-1.5 group transition-colors cursor-pointer"
+					class="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-base-content/[0.08] flex items-center gap-1.5 group transition-colors cursor-pointer"
 					class:opacity-50={loading}
 					onclick={() => !loading && replay(item)}
 					onkeydown={(e) => e.key === 'Enter' && !loading && replay(item)}
 				>
 					<span class="truncate flex-1 text-base-content/70">{item.query}</span>
 					<button
-						class="opacity-0 group-hover:opacity-100 text-base-content/30 hover:text-error transition-opacity text-[10px] shrink-0"
+						class="opacity-0 group-hover:opacity-100 text-base-content/45 hover:text-error transition-opacity text-[10px] shrink-0"
 						onclick={(e) => remove(e, item)}
 						title={t('common.delete')}
 					>

@@ -4,7 +4,7 @@
 	import LoginScreen from '$lib/components/LoginScreen.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import DistillTimer from '$lib/components/DistillTimer.svelte';
-	import { getSidebarPosition } from '$lib/stores/settings.svelte';
+	import { getSidebarPosition, applyTheme } from '$lib/stores/settings.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getCurrentWindow } from '@tauri-apps/api/window';
 
@@ -18,6 +18,10 @@
 		if (pos === 'bottom') return 'flex flex-col-reverse';
 		if (pos === 'right') return 'flex flex-row-reverse';
 		return 'flex';
+	});
+
+	$effect(() => {
+		applyTheme();
 	});
 
 	$effect(() => {

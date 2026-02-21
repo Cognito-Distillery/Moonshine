@@ -21,15 +21,15 @@
 </script>
 
 <aside
-	class="absolute top-12 left-3 z-30 w-72 flex flex-col overflow-hidden rounded-lg bg-black/60 backdrop-blur-md border border-white/[0.08] transition-all duration-300 ease-out origin-top max-h-[calc(100%-5rem)]"
+	class="absolute top-12 left-3 z-30 w-96 flex flex-col overflow-hidden rounded-lg bg-base-100/60 backdrop-blur-md border border-base-content/[0.08] transition-all duration-300 ease-out origin-top max-h-[calc(100%-5rem)]"
 	class:scale-y-100={uiStore.sidePanelOpen}
 	class:opacity-100={uiStore.sidePanelOpen}
 	class:scale-y-0={!uiStore.sidePanelOpen}
 	class:opacity-0={!uiStore.sidePanelOpen}
 	class:pointer-events-none={!uiStore.sidePanelOpen}
 >
-	<div class="px-3 py-2 border-b border-white/[0.06] flex items-center justify-between">
-		<span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
+	<div class="px-3 py-2 border-b border-base-content/[0.06] flex items-center justify-between">
+		<span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/60">
 			{#if uiStore.sidePanelMode === 'filter'}
 				{t('panel.filters')}
 			{:else if uiStore.sidePanelMode === 'detail'}
@@ -44,7 +44,7 @@
 		</span>
 		{#if uiStore.sidePanelMode !== 'filter'}
 			<button
-				class="btn btn-ghost btn-xs text-base-content/40"
+				class="btn btn-ghost btn-xs text-base-content/60"
 				onclick={() => {
 					graphStore.clearSelection();
 					uiStore.setSidePanelMode('filter');
@@ -70,7 +70,7 @@
 			{:else if graphStore.selectedEdge}
 				<EdgeDetail />
 			{:else}
-				<p class="text-xs text-base-content/30">{t('panel.clickToView')}</p>
+				<p class="text-xs text-base-content/45">{t('panel.clickToView')}</p>
 			{/if}
 		{:else if uiStore.sidePanelMode === 'edit-node'}
 			<NodeEditor />

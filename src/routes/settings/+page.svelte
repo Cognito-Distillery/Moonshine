@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 	import { check } from '@tauri-apps/plugin-updater';
 	import { relaunch } from '@tauri-apps/plugin-process';
-	import { getSidebarPosition, setSidebarPosition, getDateFormat, setDateFormat, getTimeFormat, setTimeFormat } from '$lib/stores/settings.svelte';
-	import type { SidebarPosition } from '$lib/stores/settings.svelte';
+	import { getSidebarPosition, setSidebarPosition, getDateFormat, setDateFormat, getTimeFormat, setTimeFormat, getTheme, setTheme, themeRegistry } from '$lib/stores/settings.svelte';
+	import type { SidebarPosition, ThemeId } from '$lib/stores/settings.svelte';
 	import { formatDateTime } from '$lib/utils/datetime';
 	import type { DateFormatId, TimeFormatId } from '$lib/utils/datetime';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -458,12 +458,12 @@
 
 	<!-- App Update -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
-		<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('update.app')}</h2>
+		<h2 class="text-xs font-medium text-base-content/60 uppercase tracking-wider">{t('update.app')}</h2>
 		<div class="flex items-center justify-between">
 			<span class="text-sm">{t('update.version')}: <strong>v{__APP_VERSION__}</strong></span>
 
 			{#if updateStatus === 'idle' || updateStatus === 'checking'}
-				<span class="text-xs text-base-content/40 flex items-center gap-1">
+				<span class="text-xs text-base-content/60 flex items-center gap-1">
 					<span class="loading loading-spinner loading-xs"></span>
 					{t('update.checking')}
 				</span>
@@ -499,12 +499,12 @@
 
 	<!-- Layout -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
-		<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.layout')}</h2>
+		<h2 class="text-xs font-medium text-base-content/60 uppercase tracking-wider">{t('settings.layout')}</h2>
 
 		<div class="flex items-center justify-between">
 			<div class="flex flex-col gap-0.5">
 				<span class="text-sm font-medium">{t('settings.sidebarPosition')}</span>
-				<span class="text-xs text-base-content/35">{t('settings.sidebarDesc')}</span>
+				<span class="text-xs text-base-content/65">{t('settings.sidebarDesc')}</span>
 			</div>
 			<div class="join">
 				{#each positions as pos}
@@ -521,8 +521,46 @@
 
 		<div class="flex items-center justify-between">
 			<div class="flex flex-col gap-0.5">
+				<span class="text-sm font-medium">{t('settings.theme')}</span>
+				<span class="text-xs text-base-content/65">{t('settings.themeDesc')}</span>
+			</div>
+			<div class="dropdown dropdown-end">
+				<button tabindex="0" class="btn btn-sm w-56 justify-between bg-base-content/[0.08] border-base-content/[0.12] font-normal">
+					<span class="truncate">{t(`settings.theme${getTheme()[0].toUpperCase()}${getTheme().slice(1)}` as import('$lib/i18n/index.svelte').MessageKey)}</span>
+					<svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 opacity-60" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+					</svg>
+				</button>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<ul tabindex="0" class="dropdown-content menu menu-sm z-50 mt-1 w-56 rounded-lg border border-base-content/[0.08] bg-base-100 shadow-lg">
+					{#each themeRegistry as theme}
+						<li>
+							<button
+								class="flex items-center justify-between"
+								class:active={getTheme() === theme.id}
+								onclick={() => {
+									setTheme(theme.id);
+									showToast(t('common.saved'), 'success');
+									(document.activeElement as HTMLElement)?.blur();
+								}}
+							>
+								{t(`settings.theme${theme.id[0].toUpperCase()}${theme.id.slice(1)}` as import('$lib/i18n/index.svelte').MessageKey)}
+								{#if getTheme() === theme.id}
+									<svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+									</svg>
+								{/if}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</div>
+
+		<div class="flex items-center justify-between">
+			<div class="flex flex-col gap-0.5">
 				<span class="text-sm font-medium">{t('settings.language')}</span>
-				<span class="text-xs text-base-content/35">{t('settings.languageDesc')}</span>
+				<span class="text-xs text-base-content/65">{t('settings.languageDesc')}</span>
 			</div>
 			<div class="join">
 				{#each languages as lang}
@@ -540,13 +578,13 @@
 
 	<!-- Date & Time Format -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
-		<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.dateTimeFormat')}</h2>
+		<h2 class="text-xs font-medium text-base-content/60 uppercase tracking-wider">{t('settings.dateTimeFormat')}</h2>
 
 		<div class="flex flex-col gap-2">
 			<span class="text-sm font-medium">{t('settings.dateFormat')}</span>
 			<div class="flex flex-col gap-1">
 				{#each dateFormats as df}
-					<label class="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-white/[0.06]">
+					<label class="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-base-content/[0.06]">
 						<input
 							type="radio"
 							name="dateFormat"
@@ -565,7 +603,7 @@
 			<span class="text-sm font-medium">{t('settings.timeFormat')}</span>
 			<div class="flex flex-col gap-1">
 				{#each timeFormats as tf}
-					<label class="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-white/[0.06]">
+					<label class="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-base-content/[0.06]">
 						<input
 							type="radio"
 							name="timeFormat"
@@ -580,16 +618,16 @@
 			</div>
 		</div>
 
-		<div class="flex items-center gap-2 px-2 py-2 bg-white/[0.04] rounded">
-			<span class="text-xs text-base-content/40">{t('settings.preview')}:</span>
+		<div class="flex items-center gap-2 px-2 py-2 bg-base-content/[0.04] rounded">
+			<span class="text-xs text-base-content/60">{t('settings.preview')}:</span>
 			<span class="text-sm font-medium tabular-nums">{formatDateTime(previewNow, getDateFormat(), getTimeFormat())}</span>
 		</div>
 	</section>
 
 	<!-- Password -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
-		<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.password')}</h2>
-		<p class="text-xs text-base-content/35">{t('settings.passwordDesc')}</p>
+		<h2 class="text-xs font-medium text-base-content/60 uppercase tracking-wider">{t('settings.password')}</h2>
+		<p class="text-xs text-base-content/65">{t('settings.passwordDesc')}</p>
 		<p class="text-xs">
 			{authStore.passwordSet ? t('settings.passwordSet') : t('settings.passwordNotSet')}
 		</p>
@@ -597,14 +635,14 @@
 		{#if authStore.passwordSet}
 			<input
 				type="password"
-				class="input input-sm w-full bg-white/[0.12] border-white/[0.18]"
+				class="input input-sm w-full bg-base-content/[0.08] border-base-content/[0.12]"
 				placeholder={t('settings.currentPassword')}
 				bind:value={currentPassword}
 			/>
 		{/if}
 		<input
 			type="password"
-			class="input input-sm w-full bg-white/[0.12] border-white/[0.18]"
+			class="input input-sm w-full bg-base-content/[0.08] border-base-content/[0.12]"
 			placeholder={t('settings.newPassword')}
 			bind:value={newPassword}
 		/>
@@ -632,7 +670,7 @@
 	<!-- Pipeline -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5">
 		<div class="flex items-center justify-between">
-			<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.pipeline')}</h2>
+			<h2 class="text-xs font-medium text-base-content/60 uppercase tracking-wider">{t('settings.pipeline')}</h2>
 			<button
 				class="btn btn-ghost btn-xs btn-circle text-warning"
 				aria-label={t('settings.pipelineWarningTitle')}
@@ -643,7 +681,7 @@
 				</svg>
 			</button>
 		</div>
-		<p class="text-xs text-base-content/35">{t('settings.pipelineDesc')}</p>
+		<p class="text-xs text-base-content/65">{t('settings.pipelineDesc')}</p>
 
 		<div class="flex items-center gap-3">
 			<span class="text-sm">{t('settings.pipelineInterval')}</span>
@@ -674,7 +712,7 @@
 		</button>
 
 		{#if pipelineStatus}
-			<div class="text-xs text-base-content/50 space-y-1">
+			<div class="text-xs text-base-content/65 space-y-1">
 				<div>{t('settings.pipelineLastRun')}: {formatPipelineTime(pipelineStatus.lastRun)}</div>
 				<div class="flex gap-4 flex-wrap">
 					<span>{t('settings.onStill')}: {pipelineStatus.onStillCount}</span>
@@ -687,19 +725,22 @@
 		<div class="flex items-center gap-3">
 			<div class="flex flex-col gap-0.5 flex-1">
 				<span class="text-sm font-medium">{t('settings.pipelineThreshold')}</span>
-				<span class="text-xs text-base-content/35">{t('settings.pipelineThresholdDesc')}</span>
+				<span class="text-xs text-base-content/65">{t('settings.pipelineThresholdDesc')}</span>
 			</div>
 			<input
-				type="number"
-				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
-				step="0.05"
-				min="0.1"
-				max="0.9"
+				type="text"
+				inputmode="decimal"
+				class="input input-sm w-24 bg-base-content/[0.08] border-base-content/[0.12] text-right"
 				bind:value={pipelineThreshold}
 			/>
 			<button
 				class="btn btn-sm btn-primary"
-				onclick={() => handleSaveSimilarity('pipeline_threshold', String(pipelineThreshold))}
+				onclick={() => {
+					const v = parseFloat(String(pipelineThreshold));
+					if (isNaN(v) || v < 0.1 || v > 0.9) { showToast('0.1 ~ 0.9'); pipelineThreshold = 0.3; return; }
+					pipelineThreshold = v;
+					handleSaveSimilarity('pipeline_threshold', String(v));
+				}}
 				disabled={similaritySaving}
 			>
 				{t('common.save')}
@@ -709,19 +750,22 @@
 		<div class="flex items-center gap-3">
 			<div class="flex flex-col gap-0.5 flex-1">
 				<span class="text-sm font-medium">{t('settings.pipelineTopK')}</span>
-				<span class="text-xs text-base-content/35">{t('settings.pipelineTopKDesc')}</span>
+				<span class="text-xs text-base-content/65">{t('settings.pipelineTopKDesc')}</span>
 			</div>
 			<input
-				type="number"
-				class="input input-sm w-24 bg-white/[0.12] border-white/[0.18] text-right"
-				step="1"
-				min="1"
-				max="20"
+				type="text"
+				inputmode="numeric"
+				class="input input-sm w-24 bg-base-content/[0.08] border-base-content/[0.12] text-right"
 				bind:value={pipelineTopK}
 			/>
 			<button
 				class="btn btn-sm btn-primary"
-				onclick={() => handleSaveSimilarity('pipeline_top_k', String(pipelineTopK))}
+				onclick={() => {
+					const v = parseInt(String(pipelineTopK));
+					if (isNaN(v) || v < 1 || v > 20) { showToast('1 ~ 20'); pipelineTopK = 5; return; }
+					pipelineTopK = v;
+					handleSaveSimilarity('pipeline_top_k', String(v));
+				}}
 				disabled={similaritySaving}
 			>
 				{t('common.save')}
@@ -740,7 +784,7 @@
 	<!-- AI Provider -->
 	<section class="border border-base-300 rounded-lg p-5 flex flex-col gap-5 relative">
 		<div class="flex items-center justify-between">
-			<h2 class="text-xs font-medium text-base-content/40 uppercase tracking-wider">{t('settings.aiProvider')}</h2>
+			<h2 class="text-xs font-medium text-base-content/60 uppercase tracking-wider">{t('settings.aiProvider')}</h2>
 			<button
 				class="btn btn-ghost btn-xs btn-circle text-warning"
 				aria-label={t('settings.providerWarningTitle')}
@@ -751,7 +795,7 @@
 				</svg>
 			</button>
 		</div>
-		<p class="text-xs text-base-content/35">{t('settings.aiProviderDesc')}</p>
+		<p class="text-xs text-base-content/65">{t('settings.aiProviderDesc')}</p>
 
 		<div class="flex items-center justify-between">
 			<span class="text-sm font-medium">{t('settings.provider')}</span>
@@ -779,7 +823,7 @@
 				<div class="flex gap-2">
 					<input
 						type="password"
-						class="input input-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+						class="input input-sm flex-1 bg-base-content/[0.08] border-base-content/[0.12]"
 						placeholder={apiKeyPlaceholder}
 						bind:value={apiKey}
 					/>
@@ -801,7 +845,7 @@
 				</div>
 			{:else}
 				<div class="flex items-center gap-2">
-					<span class="text-sm text-base-content/50 font-mono flex-1">{maskApiKey(apiKey)}</span>
+					<span class="text-sm text-base-content/65 font-mono flex-1">{maskApiKey(apiKey)}</span>
 					<button
 						class="btn btn-sm btn-ghost"
 						onclick={() => { apiKey = ''; apiKeyEditing = true; }}
@@ -817,7 +861,7 @@
 			<span class="text-sm font-medium">{t('settings.embeddingModel')}</span>
 			<div class="flex gap-2">
 				<select
-					class="select select-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+					class="select select-sm flex-1 bg-base-content/[0.08] border-base-content/[0.12]"
 					value={embeddingModelCustom ? '__custom__' : embeddingModel}
 					onchange={(e) => {
 						const val = (e.target as HTMLSelectElement).value;
@@ -841,7 +885,7 @@
 				<div class="flex gap-2">
 					<input
 						type="text"
-						class="input input-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+						class="input input-sm flex-1 bg-base-content/[0.08] border-base-content/[0.12]"
 						placeholder={t('settings.modelCustom')}
 						bind:value={customEmbeddingModel}
 					/>
@@ -877,7 +921,7 @@
 			<span class="text-sm font-medium">{t('settings.chatModel')}</span>
 			<div class="flex gap-2">
 				<select
-					class="select select-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+					class="select select-sm flex-1 bg-base-content/[0.08] border-base-content/[0.12]"
 					value={chatModelCustom ? '__custom__' : chatModel}
 					onchange={(e) => {
 						const val = (e.target as HTMLSelectElement).value;
@@ -901,7 +945,7 @@
 				<div class="flex gap-2">
 					<input
 						type="text"
-						class="input input-sm flex-1 bg-white/[0.12] border-white/[0.18]"
+						class="input input-sm flex-1 bg-base-content/[0.08] border-base-content/[0.12]"
 						placeholder={t('settings.modelCustom')}
 						bind:value={customChatModel}
 					/>

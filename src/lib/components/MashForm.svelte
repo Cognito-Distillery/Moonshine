@@ -25,7 +25,7 @@
 
 <form class="flex flex-col gap-4" onsubmit={handleSubmit}>
 	<textarea
-		class="textarea w-full bg-white/[0.12] border-white/[0.18] focus:border-primary placeholder:text-base-content/30"
+		class="textarea w-full bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary placeholder:text-base-content/45"
 		placeholder={t('form.text')}
 		bind:value={text}
 		rows="4"

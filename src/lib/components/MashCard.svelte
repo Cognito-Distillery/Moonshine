@@ -115,7 +115,7 @@
 </script>
 
 {#if editing}
-	<article class="p-4 border border-primary/40 rounded-lg bg-white/[0.04] flex flex-col gap-3">
+	<article class="p-4 border border-primary/40 rounded-lg bg-base-content/[0.04] flex flex-col gap-3">
 		<div class="flex gap-2">
 			{#each mashTypes as mt}
 				<button
@@ -131,20 +131,20 @@
 
 		<input
 			type="text"
-			class="input input-sm w-full bg-white/[0.12] border-white/[0.18] focus:border-primary placeholder:text-base-content/30"
+			class="input input-sm w-full bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary placeholder:text-base-content/45"
 			placeholder={t('form.summary')}
 			bind:value={editSummary}
 		/>
 
 		<textarea
-			class="textarea textarea-sm w-full bg-white/[0.12] border-white/[0.18] focus:border-primary text-sm placeholder:text-base-content/30"
+			class="textarea textarea-sm w-full bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary text-sm placeholder:text-base-content/45"
 			placeholder={t('form.context')}
 			bind:value={editContext}
 			rows="2"
 		></textarea>
 
 		<textarea
-			class="textarea textarea-sm w-full bg-white/[0.12] border-white/[0.18] focus:border-primary text-sm placeholder:text-base-content/30"
+			class="textarea textarea-sm w-full bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary text-sm placeholder:text-base-content/45"
 			placeholder={t('form.memo')}
 			bind:value={editMemo}
 			rows="2"
@@ -162,13 +162,13 @@
 		</div>
 	</article>
 {:else if view === 'card'}
-	<article class="p-4 border {typeBgClass[mash.type]} rounded-lg hover:bg-white/[0.08] transition-colors group flex flex-col gap-2">
+	<article class="p-4 border {typeBgClass[mash.type]} rounded-lg hover:bg-base-content/[0.06] transition-colors group flex flex-col gap-2">
 		<div class="flex items-center justify-between">
 			<span class="badge badge-sm badge-outline {typeBadgeClass[mash.type]}">{typeLabel(mash.type)}</span>
 			<div class="flex items-center gap-1">
 				{#if mode === 'mashes'}
 					<button
-						class="btn btn-ghost btn-xs text-base-content/25 hover:text-base-content/60"
+						class="btn btn-ghost btn-xs text-base-content/40 hover:text-base-content/60"
 						title={t('common.edit')}
 						onclick={startEdit}
 					>
@@ -178,7 +178,7 @@
 						</svg>
 					</button>
 					<button
-						class="btn btn-ghost btn-xs text-base-content/25 hover:text-primary/70"
+						class="btn btn-ghost btn-xs text-base-content/40 hover:text-primary/70"
 						title={t('card.putOnStill')}
 						onclick={() => handleSetStatus(mash.id, MashStatus.ON_STILL)}
 					>
@@ -192,7 +192,7 @@
 					</button>
 				{:else if mode === 'still'}
 					<button
-						class="btn btn-ghost btn-xs text-base-content/30 hover:text-warning"
+						class="btn btn-ghost btn-xs text-base-content/45 hover:text-warning"
 						title={t('card.takeOffStill')}
 						onclick={() => handleSetStatus(mash.id, MashStatus.MASH_TUN)}
 					>
@@ -205,9 +205,9 @@
 				{/if}
 				{#if showConfirm}
 					<button class="btn btn-ghost btn-xs text-error" onclick={() => handleDelete(mash.id)}>{t('common.delete')}</button>
-					<button class="btn btn-ghost btn-xs text-base-content/40" onclick={() => (showConfirm = false)}>{t('common.cancel')}</button>
+					<button class="btn btn-ghost btn-xs text-base-content/60" onclick={() => (showConfirm = false)}>{t('common.cancel')}</button>
 				{:else}
-					<button class="btn btn-ghost btn-xs text-base-content/30 hover:text-error" title={t('common.delete')} onclick={() => (showConfirm = true)}>
+					<button class="btn btn-ghost btn-xs text-base-content/45 hover:text-error" title={t('common.delete')} onclick={() => (showConfirm = true)}>
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<polyline points="3 6 5 6 21 6"/>
 							<path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
@@ -220,25 +220,25 @@
 		<p class="text-[15px] font-medium leading-relaxed">{mash.summary}</p>
 
 		{#if mash.context}
-			<p class="text-sm text-base-content/50 leading-relaxed line-clamp-2">{mash.context}</p>
+			<p class="text-sm text-base-content/65 leading-relaxed line-clamp-2">{mash.context}</p>
 		{/if}
 
 		{#if mash.memo}
-			<p class="text-sm text-base-content/30 italic leading-relaxed line-clamp-1">{mash.memo}</p>
+			<p class="text-sm text-base-content/45 italic leading-relaxed line-clamp-1">{mash.memo}</p>
 		{/if}
 
 		<div class="flex items-center justify-between mt-auto pt-1">
-			<span class="text-xs text-base-content/25">{formatDateTime(mash.createdAt, getDateFormat(), getTimeFormat())}</span>
+			<span class="text-xs text-base-content/40">{formatDateTime(mash.createdAt, getDateFormat(), getTimeFormat())}</span>
 		</div>
 	</article>
 {:else}
-	<article class="p-4 border border-base-300 rounded-lg border-l-[3px] {typeBorderClass[mash.type]} hover:bg-white/[0.08] transition-colors group">
+	<article class="p-4 border border-base-300 rounded-lg border-l-[3px] {typeBorderClass[mash.type]} hover:bg-base-content/[0.06] transition-colors group">
 		<div class="flex items-center justify-between mb-2">
 			<span class="badge badge-sm badge-outline {typeBadgeClass[mash.type]}">{typeLabel(mash.type)}</span>
 			<div class="flex items-center gap-2">
 				{#if mode === 'mashes'}
 					<button
-						class="btn btn-ghost btn-xs text-base-content/30 hover:text-base-content/60"
+						class="btn btn-ghost btn-xs text-base-content/45 hover:text-base-content/60"
 						title={t('common.edit')}
 						onclick={startEdit}
 					>
@@ -248,7 +248,7 @@
 						</svg>
 					</button>
 					<button
-						class="btn btn-ghost btn-xs text-base-content/30 hover:text-primary/70"
+						class="btn btn-ghost btn-xs text-base-content/45 hover:text-primary/70"
 						title={t('card.putOnStill')}
 						onclick={() => handleSetStatus(mash.id, MashStatus.ON_STILL)}
 					>
@@ -262,7 +262,7 @@
 					</button>
 				{:else if mode === 'still'}
 					<button
-						class="btn btn-ghost btn-xs text-base-content/30 hover:text-warning"
+						class="btn btn-ghost btn-xs text-base-content/45 hover:text-warning"
 						title={t('card.takeOffStill')}
 						onclick={() => handleSetStatus(mash.id, MashStatus.MASH_TUN)}
 					>
@@ -275,27 +275,27 @@
 				{/if}
 				{#if showConfirm}
 					<button class="btn btn-ghost btn-xs text-error" onclick={() => handleDelete(mash.id)}>{t('common.delete')}</button>
-					<button class="btn btn-ghost btn-xs text-base-content/40" onclick={() => (showConfirm = false)}>{t('common.cancel')}</button>
+					<button class="btn btn-ghost btn-xs text-base-content/60" onclick={() => (showConfirm = false)}>{t('common.cancel')}</button>
 				{:else}
-					<button class="btn btn-ghost btn-xs text-base-content/30 hover:text-error" title={t('common.delete')} onclick={() => (showConfirm = true)}>
+					<button class="btn btn-ghost btn-xs text-base-content/45 hover:text-error" title={t('common.delete')} onclick={() => (showConfirm = true)}>
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<polyline points="3 6 5 6 21 6"/>
 							<path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
 						</svg>
 					</button>
 				{/if}
-				<span class="text-xs text-base-content/30">{formatDateTime(mash.createdAt, getDateFormat(), getTimeFormat())}</span>
+				<span class="text-xs text-base-content/45">{formatDateTime(mash.createdAt, getDateFormat(), getTimeFormat())}</span>
 			</div>
 		</div>
 
 		<p class="text-[15px] font-medium leading-relaxed">{mash.summary}</p>
 
 		{#if mash.context}
-			<p class="mt-1.5 text-sm text-base-content/50 leading-relaxed">{mash.context}</p>
+			<p class="mt-1.5 text-sm text-base-content/65 leading-relaxed">{mash.context}</p>
 		{/if}
 
 		{#if mash.memo}
-			<p class="mt-1.5 text-sm text-base-content/30 italic leading-relaxed">{mash.memo}</p>
+			<p class="mt-1.5 text-sm text-base-content/45 italic leading-relaxed">{mash.memo}</p>
 		{/if}
 	</article>
 {/if}

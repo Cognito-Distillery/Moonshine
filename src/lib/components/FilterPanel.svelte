@@ -42,7 +42,7 @@
 		</h3>
 		<div class="space-y-1">
 			{#each relationTypes as rt}
-				<label class="flex items-center gap-2 cursor-pointer px-1 py-1 rounded hover:bg-white/[0.05]">
+				<label class="flex items-center gap-2 cursor-pointer px-1 py-1 rounded hover:bg-base-content/[0.05]">
 					<input
 						type="checkbox"
 						class="checkbox checkbox-xs"
@@ -82,7 +82,7 @@
 		</h3>
 		<div class="space-y-2">
 			<label class="flex items-center gap-2 text-xs text-base-content/60">
-				<span class="w-16 shrink-0">{t('layout.nodeSpacing')}</span>
+				<span class="w-24 shrink-0">{t('layout.nodeSpacing')}</span>
 				<input
 					type="range"
 					min="5" max="100" step="5"
@@ -94,7 +94,7 @@
 				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{layoutParams.nodeSpacing}</span>
 			</label>
 			<label class="flex items-center gap-2 text-xs text-base-content/60">
-				<span class="w-16 shrink-0">{t('layout.edgeLength')}</span>
+				<span class="w-24 shrink-0">{t('layout.edgeLength')}</span>
 				<input
 					type="range"
 					min="30" max="300" step="10"
@@ -106,7 +106,7 @@
 				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{layoutParams.edgeLength}</span>
 			</label>
 			<label class="flex items-center gap-2 text-xs text-base-content/60">
-				<span class="w-16 shrink-0">{t('layout.convergence')}</span>
+				<span class="w-24 shrink-0">{t('layout.convergence')}</span>
 				<input
 					type="range"
 					min="0" max="3" step="1"
@@ -118,7 +118,7 @@
 				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{convergenceIndex + 1}/4</span>
 			</label>
 			<label class="flex items-center gap-2 text-xs text-base-content/60">
-				<span class="w-16 shrink-0">{t('layout.spreadForce')}</span>
+				<span class="w-24 shrink-0">{t('layout.spreadForce')}</span>
 				<input
 					type="range"
 					min="1" max="30" step="1"
@@ -130,7 +130,7 @@
 				<span class="w-8 text-right text-base-content/80 tabular-nums shrink-0 text-[10px]">{layoutParams.edgeSymDiffLength}</span>
 			</label>
 			<label class="flex items-center gap-2 text-xs text-base-content/60">
-				<span class="w-16 shrink-0">{t('layout.zoomSensitivity')}</span>
+				<span class="w-24 shrink-0">{t('layout.zoomSensitivity')}</span>
 				<input
 					type="range"
 					min="0.05" max="1" step="0.05"
@@ -143,7 +143,7 @@
 			</label>
 			<div class="flex justify-end pt-1">
 				<button
-					class="btn btn-xs btn-ghost text-base-content/50 hover:text-base-content/80"
+					class="btn btn-xs btn-ghost text-base-content/65 hover:text-base-content/80"
 					onclick={onReset}
 				>
 					{t('layout.reset')}

@@ -158,7 +158,7 @@
 </script>
 
 <div class="relative">
-	<div class="flex items-center bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg focus-within:border-primary/50 transition-colors">
+	<div class="flex items-center bg-base-100/60 backdrop-blur-sm border border-base-content/10 rounded-lg focus-within:border-primary/50 transition-colors">
 		<!-- Mode dropdown trigger -->
 		<div class="relative">
 			<button
@@ -169,12 +169,12 @@
 				{currentModeLabel} ▾
 			</button>
 			{#if showModeMenu}
-				<ul class="absolute top-full left-0 mt-1 bg-black/90 backdrop-blur-md rounded-lg shadow-xl border border-white/[0.08] z-50 min-w-max p-1">
+				<ul class="absolute top-full left-0 mt-1 bg-base-100/90 backdrop-blur-md rounded-lg shadow-xl border border-base-content/[0.08] z-50 min-w-max p-1">
 					{#each modeOptions as opt}
 						<li>
 							<button
 								class="w-full text-left text-[11px] font-mono px-3 py-1.5 rounded transition-colors
-									{searchStore.mode === opt.value ? 'text-primary bg-white/[0.08]' : 'text-base-content/60 hover:bg-white/[0.06]'}"
+									{searchStore.mode === opt.value ? 'text-primary bg-base-content/[0.08]' : 'text-base-content/60 hover:bg-base-content/[0.06]'}"
 								onmousedown={() => selectMode(opt.value)}
 								title={t(opt.tipKey)}
 							>
@@ -188,7 +188,7 @@
 		<input
 			type="text"
 			{placeholder}
-			class="bg-transparent border-none outline-none w-44 py-1 pr-2 text-xs placeholder:text-base-content/20"
+			class="bg-transparent border-none outline-none w-44 py-1 pr-2 text-xs placeholder:text-base-content/35"
 			value={searchStore.query}
 			oninput={handleInput}
 			onkeydown={handleKeydown}
@@ -200,14 +200,14 @@
 		{/if}
 	</div>
 	{#if showDropdown && searchStore.results.length > 0}
-		<ul class="bg-black/80 backdrop-blur-md rounded-lg shadow-xl border border-white/[0.08] absolute top-full mt-1 w-full z-50 max-h-60 overflow-y-auto p-1">
+		<ul class="bg-base-100/80 backdrop-blur-md rounded-lg shadow-xl border border-base-content/[0.08] absolute top-full mt-1 w-full z-50 max-h-60 overflow-y-auto p-1">
 			{#each searchStore.results as node}
 				<li>
 					<button
-						class="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-white/[0.08] flex items-center gap-1.5"
+						class="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-base-content/[0.08] flex items-center gap-1.5"
 						onclick={() => selectResult(node.id)}
 					>
-						<span class="text-[10px] text-base-content/30">{node.type}</span>
+						<span class="text-[10px] text-base-content/45">{node.type}</span>
 						<span class="text-base-content/70">{node.summary}</span>
 					</button>
 				</li>

@@ -58,7 +58,7 @@
 	<!-- Form -->
 	<form class="flex flex-col gap-2 px-3 pb-3 flex-1" onsubmit={handleSubmit}>
 		<textarea
-			class="textarea textarea-sm w-full flex-1 bg-white/[0.12] border-white/[0.18] focus:border-primary text-sm placeholder:text-base-content/30"
+			class="textarea textarea-sm w-full flex-1 bg-base-content/[0.08] border-base-content/[0.12] focus:border-primary text-sm placeholder:text-base-content/45"
 			placeholder={t('form.text')}
 			bind:value={text}
 			rows="5"

@@ -6,7 +6,7 @@
 <div class="max-w-2xl mx-auto flex flex-col gap-8">
 	<div>
 		<h1 class="text-2xl font-semibold tracking-tight">{t('mashing.title')}</h1>
-		<p class="text-sm text-base-content/40 mt-1">{t('mashing.subtitle')}</p>
+		<p class="text-sm text-base-content/60 mt-1">{t('mashing.subtitle')}</p>
 	</div>
 	<MashForm />
 </div>

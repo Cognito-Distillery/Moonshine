@@ -7,12 +7,14 @@
 	import { showToast } from '$lib/stores/toast.svelte';
 	import { t } from '$lib/i18n/index.svelte';
 	import {
-		defaultCytoscapeOptions,
+		createCytoscapeOptions,
 		createCytoscapeLayout,
 		defaultLayoutParams,
 		DEFAULT_WHEEL_SENSITIVITY,
 		type LayoutParams
 	} from '$lib/graph/cytoscape-config';
+	import { getCytoscapeStylesheet, graphBackgrounds } from '$lib/graph/cytoscape-styles';
+	import { getTheme } from '$lib/stores/settings.svelte';
 	import {
 		setupNodeEvents,
 		setupHoverEvents,
@@ -109,7 +111,7 @@
 			cy = cytoscape({
 				container,
 				elements: graphStore.cytoscapeElements,
-				...defaultCytoscapeOptions
+				...createCytoscapeOptions(getTheme())
 			});
 
 			setupNodeEvents(cy);
@@ -218,6 +220,18 @@
 		});
 	});
 
+	// Re-apply Cytoscape styles when theme changes
+	$effect(() => {
+		if (!cy) return;
+		const theme = getTheme();
+		const s = cy.style() as unknown as {
+			clear(): typeof s;
+			fromJson(json: unknown): typeof s;
+			update(): void;
+		};
+		s.clear().fromJson(getCytoscapeStylesheet(theme)).update();
+	});
+
 	function onContextAction(action: string) {
 		if (!cy) return;
 		handleContextMenuAction(action, contextMenu.targetId, contextMenu.targetType, cy);
@@ -240,12 +254,12 @@
 	}
 </script>
 
-<div class="relative w-full h-full" style="background: #000000;">
+<div class="relative w-full h-full" style="background: {graphBackgrounds[getTheme()]}">
 	<div bind:this={container} class="w-full h-full"></div>
 
 	<!-- Floating hamburger button - top left -->
 	<button
-		class="absolute top-3 left-3 z-20 btn btn-sm btn-square bg-black/60 border-white/10 hover:bg-black/80 backdrop-blur-sm"
+		class="absolute top-3 left-3 z-20 btn btn-sm btn-square bg-base-100/60 border-base-content/10 hover:bg-base-100/80 backdrop-blur-sm"
 		onclick={() => uiStore.toggleSidePanel()}
 		title={t('graph.togglePanel')}
 	>
@@ -264,7 +278,7 @@
 		<div class="flex items-center gap-1.5">
 			{#if graphStore.searchMatchIds.size > 0}
 				<button
-					class="p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-base-content/40 hover:text-base-content/80 hover:border-white/20 transition-colors"
+					class="p-1.5 rounded-lg bg-base-100/60 backdrop-blur-sm border border-base-content/10 text-base-content/60 hover:text-base-content/80 hover:border-base-content/20 transition-colors"
 					onclick={() => graphStore.clearSearchMatches()}
 					title={t('graph.clearHighlights')}
 				>
@@ -275,7 +289,7 @@
 			{/if}
 			<SearchInput onfocus={focusNode} />
 			<button
-				class="p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 transition-colors {showHistory ? 'text-primary border-primary/30' : 'text-base-content/40 hover:text-base-content/80 hover:border-white/20'}"
+				class="p-1.5 rounded-lg bg-base-100/60 backdrop-blur-sm border border-base-content/10 transition-colors {showHistory ? 'text-primary border-primary/30' : 'text-base-content/60 hover:text-base-content/80 hover:border-base-content/20'}"
 				onclick={() => { showHistory = !showHistory; showSearchSettings = false; }}
 				title={t('search.recent')}
 			>
@@ -284,7 +298,7 @@
 				</svg>
 			</button>
 			<button
-				class="p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 transition-colors {showSearchSettings ? 'text-primary border-primary/30' : 'text-base-content/40 hover:text-base-content/80 hover:border-white/20'}"
+				class="p-1.5 rounded-lg bg-base-100/60 backdrop-blur-sm border border-base-content/10 transition-colors {showSearchSettings ? 'text-primary border-primary/30' : 'text-base-content/60 hover:text-base-content/80 hover:border-base-content/20'}"
 				onclick={() => { showSearchSettings = !showSearchSettings; showHistory = false; }}
 				title={t('filter.searchSettings')}
 			>
@@ -294,11 +308,11 @@
 			</button>
 		</div>
 		{#if showSearchSettings}
-			<div class="absolute top-full right-0 mt-1.5 w-64 bg-black/80 backdrop-blur-md rounded-lg border border-white/[0.08] p-3 shadow-xl space-y-2">
+			<div class="absolute top-full right-0 mt-1.5 w-64 bg-base-100/80 backdrop-blur-md rounded-lg border border-base-content/[0.08] p-3 shadow-xl space-y-2">
 				<div>
 					<div class="flex items-center justify-between mb-1">
 						<span class="text-xs text-base-content/70">{t('settings.searchThreshold')}</span>
-						<span class="text-xs text-base-content/50 tabular-nums">{searchThreshold}</span>
+						<span class="text-xs text-base-content/65 tabular-nums">{searchThreshold}</span>
 					</div>
 					<input
 						type="range"
@@ -314,7 +328,7 @@
 				<div>
 					<div class="flex items-center justify-between mb-1">
 						<span class="text-xs text-base-content/70">{t('settings.searchTopK')}</span>
-						<span class="text-xs text-base-content/50 tabular-nums">{searchTopK}</span>
+						<span class="text-xs text-base-content/65 tabular-nums">{searchTopK}</span>
 					</div>
 					<input
 						type="range"
@@ -330,7 +344,7 @@
 			</div>
 		{/if}
 		{#if showHistory}
-			<div class="absolute top-full right-0 mt-1.5 w-64 bg-black/80 backdrop-blur-md rounded-lg border border-white/[0.08] p-3 shadow-xl">
+			<div class="absolute top-full right-0 mt-1.5 w-64 bg-base-100/80 backdrop-blur-md rounded-lg border border-base-content/[0.08] p-3 shadow-xl">
 				<RecentSearches />
 			</div>
 		{/if}

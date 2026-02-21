@@ -2,45 +2,347 @@
 @plugin "daisyui";
 
 @plugin "daisyui/theme" {
-  name: "pitch";
+  name: "monochrome-black";
   default: true;
   color-scheme: dark;
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 1rem;
 
-  /* pure black base */
+  /* Black #000000 */
   --color-base-100: oklch(0% 0 0);
-  --color-base-200: oklch(0% 0 0);
-  --color-base-300: oklch(18% 0.005 230);
+  /* Carbon Black #1c1c1c */
+  --color-base-200: oklch(18% 0 0);
+  /* Graphite #393939 */
+  --color-base-300: oklch(30% 0 0);
 
-  /* cool off-white text */
-  --color-base-content: oklch(90% 0.01 230);
+  /* Alabaster Grey #e3e3e3 */
+  --color-base-content: oklch(91% 0 0);
 
-  /* moonshine silver */
-  --color-primary: oklch(86% 0.02 230);
-  --color-primary-content: oklch(10% 0.01 230);
+  /* Silver #c6c6c6 */
+  --color-primary: oklch(82% 0 0);
+  --color-primary-content: oklch(18% 0 0);
 
-  /* muted steel */
-  --color-secondary: oklch(60% 0.03 230);
-  --color-secondary-content: oklch(95% 0.005 230);
+  /* Grey Olive #8e8e8e */
+  --color-secondary: oklch(63% 0 0);
+  --color-secondary-content: oklch(91% 0 0);
 
-  /* deep steel */
-  --color-accent: oklch(50% 0.04 240);
-  --color-accent-content: oklch(92% 0.01 240);
+  /* Dim Grey #717171 */
+  --color-accent: oklch(52% 0 0);
+  --color-accent-content: oklch(91% 0 0);
 
-  --color-neutral: oklch(16% 0.005 230);
-  --color-neutral-content: oklch(80% 0.01 230);
+  /* Carbon Black #1c1c1c */
+  --color-neutral: oklch(18% 0 0);
+  --color-neutral-content: oklch(73% 0 0);
 
-  /* note types — warm palette */
   --color-info: oklch(62% 0.12 240);
-  --color-info-content: oklch(95% 0.01 240);
+  --color-info-content: oklch(95% 0 0);
 
   --color-success: oklch(65% 0.14 155);
-  --color-success-content: oklch(95% 0.01 155);
+  --color-success-content: oklch(95% 0 0);
 
   --color-warning: oklch(78% 0.15 75);
-  --color-warning-content: oklch(12% 0.03 75);
+  --color-warning-content: oklch(12% 0 0);
 
   --color-error: oklch(55% 0.18 20);
-  --color-error-content: oklch(95% 0.01 20);
+  --color-error-content: oklch(95% 0 0);
+}
+
+@plugin "daisyui/theme" {
+  name: "monochrome-white";
+  color-scheme: light;
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 1rem;
+
+  /* White #ffffff */
+  --color-base-100: oklch(100% 0 0);
+  /* Alabaster Grey #e3e3e3 */
+  --color-base-200: oklch(91% 0 0);
+  /* Silver #c6c6c6 */
+  --color-base-300: oklch(82% 0 0);
+
+  /* Carbon Black #1c1c1c */
+  --color-base-content: oklch(18% 0 0);
+
+  /* Graphite #393939 */
+  --color-primary: oklch(30% 0 0);
+  --color-primary-content: oklch(100% 0 0);
+
+  /* Dim Grey #717171 */
+  --color-secondary: oklch(52% 0 0);
+  --color-secondary-content: oklch(100% 0 0);
+
+  /* Charcoal #555555 */
+  --color-accent: oklch(42% 0 0);
+  --color-accent-content: oklch(100% 0 0);
+
+  /* Alabaster Grey #e3e3e3 */
+  --color-neutral: oklch(91% 0 0);
+  --color-neutral-content: oklch(30% 0 0);
+
+  --color-info: oklch(50% 0.10 230);
+  --color-info-content: oklch(100% 0 0);
+
+  --color-success: oklch(50% 0.12 155);
+  --color-success-content: oklch(100% 0 0);
+
+  --color-warning: oklch(65% 0.10 75);
+  --color-warning-content: oklch(18% 0 0);
+
+  --color-error: oklch(50% 0.14 25);
+  --color-error-content: oklch(100% 0 0);
+}
+
+@plugin "daisyui/theme" {
+  name: "peach";
+  color-scheme: light;
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 1rem;
+
+  /* Seashell #f8edeb */
+  --color-base-100: oklch(95% 0.012 20);
+  /* Soft Blush #fae1dd */
+  --color-base-200: oklch(93% 0.022 22);
+  /* Alabaster Grey #d8e2dc */
+  --color-base-300: oklch(90% 0.015 155);
+
+  /* dark warm rose-brown */
+  --color-base-content: oklch(25% 0.035 30);
+
+  /* deep warm coral */
+  --color-primary: oklch(55% 0.12 35);
+  --color-primary-content: oklch(95% 0.012 20);
+
+  /* muted sage */
+  --color-secondary: oklch(55% 0.05 155);
+  --color-secondary-content: oklch(95% 0.012 20);
+
+  /* warm peach accent */
+  --color-accent: oklch(60% 0.10 55);
+  --color-accent-content: oklch(95% 0.012 20);
+
+  /* Alabaster Grey #e8e8e4 */
+  --color-neutral: oklch(93% 0.005 90);
+  /* dark rose-brown */
+  --color-neutral-content: oklch(30% 0.03 30);
+
+  /* soft blue */
+  --color-info: oklch(55% 0.10 240);
+  --color-info-content: oklch(95% 0.012 20);
+
+  /* soft green */
+  --color-success: oklch(55% 0.12 155);
+  --color-success-content: oklch(95% 0.012 20);
+
+  /* Peach Glow warm */
+  --color-warning: oklch(70% 0.10 65);
+  --color-warning-content: oklch(25% 0.035 30);
+
+  /* soft rose-red */
+  --color-error: oklch(52% 0.14 15);
+  --color-error-content: oklch(95% 0.012 20);
+}
+
+@plugin "daisyui/theme" {
+  name: "warm-earth";
+  color-scheme: dark;
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 1rem;
+
+  /* Jet Black #143642 */
+  --color-base-100: oklch(27% 0.035 220);
+  /* Jet Black #263c41 */
+  --color-base-200: oklch(32% 0.025 210);
+  /* Iron Grey #38413f */
+  --color-base-300: oklch(35% 0.01 175);
+
+  /* warm cream text */
+  --color-base-content: oklch(88% 0.04 65);
+
+  /* Copper #b76935 */
+  --color-primary: oklch(59% 0.11 50);
+  --color-primary-content: oklch(18% 0.03 50);
+
+  /* Olive Wood #815839 */
+  --color-secondary: oklch(50% 0.065 55);
+  --color-secondary-content: oklch(90% 0.035 65);
+
+  /* Cinnamon Wood #a56336 */
+  --color-accent: oklch(56% 0.095 50);
+  --color-accent-content: oklch(90% 0.035 65);
+
+  /* Charcoal Brown #4a473e */
+  --color-neutral: oklch(39% 0.015 85);
+  --color-neutral-content: oklch(75% 0.04 65);
+
+  /* warm teal info */
+  --color-info: oklch(58% 0.10 235);
+  --color-info-content: oklch(92% 0.02 65);
+
+  /* earthy green */
+  --color-success: oklch(60% 0.12 150);
+  --color-success-content: oklch(92% 0.02 65);
+
+  /* amber warning */
+  --color-warning: oklch(72% 0.14 75);
+  --color-warning-content: oklch(18% 0.03 65);
+
+  /* warm terracotta error */
+  --color-error: oklch(52% 0.15 25);
+  --color-error-content: oklch(92% 0.02 65);
+}
+
+@plugin "daisyui/theme" {
+  name: "warm-earth-light";
+  color-scheme: light;
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 1rem;
+
+  /* Warm Cream #f0e4d7 */
+  --color-base-100: oklch(93% 0.025 65);
+  /* Soft Sand #e5d5c3 */
+  --color-base-200: oklch(88% 0.03 60);
+  /* Warm Beige #d4c0aa */
+  --color-base-300: oklch(82% 0.035 55);
+
+  /* Dark Roast #3a2a1a */
+  --color-base-content: oklch(25% 0.04 50);
+
+  /* Copper #b76935 */
+  --color-primary: oklch(55% 0.11 50);
+  --color-primary-content: oklch(93% 0.025 65);
+
+  /* Olive Wood #815839 */
+  --color-secondary: oklch(45% 0.065 55);
+  --color-secondary-content: oklch(93% 0.025 65);
+
+  /* Cinnamon Wood #a56336 */
+  --color-accent: oklch(52% 0.095 50);
+  --color-accent-content: oklch(93% 0.025 65);
+
+  /* Light Linen #e8ddd0 */
+  --color-neutral: oklch(90% 0.02 60);
+  --color-neutral-content: oklch(35% 0.04 50);
+
+  /* muted teal info */
+  --color-info: oklch(50% 0.10 235);
+  --color-info-content: oklch(93% 0.025 65);
+
+  /* earthy green */
+  --color-success: oklch(50% 0.12 150);
+  --color-success-content: oklch(93% 0.025 65);
+
+  /* amber warning */
+  --color-warning: oklch(65% 0.12 75);
+  --color-warning-content: oklch(25% 0.04 50);
+
+  /* warm terracotta error */
+  --color-error: oklch(50% 0.15 25);
+  --color-error-content: oklch(93% 0.025 65);
+}
+
+@plugin "daisyui/theme" {
+  name: "forest";
+  color-scheme: dark;
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 1rem;
+
+  /* Charcoal Blue #264653 */
+  --color-base-100: oklch(34% 0.04 220);
+  /* slightly lighter teal */
+  --color-base-200: oklch(38% 0.04 215);
+  /* Stormy Teal #287271 */
+  --color-base-300: oklch(50% 0.06 190);
+
+  /* warm cream text */
+  --color-base-content: oklch(90% 0.04 85);
+
+  /* Verdigris #2a9d8f */
+  --color-primary: oklch(63% 0.09 178);
+  --color-primary-content: oklch(18% 0.03 178);
+
+  /* Jasmine #e9c46a */
+  --color-secondary: oklch(83% 0.11 85);
+  --color-secondary-content: oklch(20% 0.03 85);
+
+  /* Sandy Brown #f4a261 */
+  --color-accent: oklch(77% 0.11 58);
+  --color-accent-content: oklch(20% 0.03 58);
+
+  /* dark teal */
+  --color-neutral: oklch(30% 0.03 210);
+  --color-neutral-content: oklch(80% 0.04 85);
+
+  /* teal info */
+  --color-info: oklch(60% 0.08 210);
+  --color-info-content: oklch(95% 0.01 210);
+
+  /* Muted Olive #8ab17d */
+  --color-success: oklch(72% 0.07 140);
+  --color-success-content: oklch(18% 0.03 140);
+
+  /* Sunlit Clay #efb366 */
+  --color-warning: oklch(80% 0.11 70);
+  --color-warning-content: oklch(20% 0.03 70);
+
+  /* Burnt Peach #e76f51 */
+  --color-error: oklch(64% 0.14 35);
+  --color-error-content: oklch(95% 0.01 35);
+}
+
+@plugin "daisyui/theme" {
+  name: "oceanic";
+  color-scheme: dark;
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 1rem;
+
+  /* Ink Black #001219 */
+  --color-base-100: oklch(12% 0.025 220);
+  /* between Ink Black and Dark Teal */
+  --color-base-200: oklch(25% 0.05 215);
+  /* Dark Teal #005f73 */
+  --color-base-300: oklch(42% 0.08 210);
+
+  /* Wheat #e9d8a6 */
+  --color-base-content: oklch(89% 0.06 90);
+
+  /* Dark Cyan #0a9396 */
+  --color-primary: oklch(58% 0.09 195);
+  --color-primary-content: oklch(12% 0.025 220);
+
+  /* Golden Orange #ee9b00 */
+  --color-secondary: oklch(74% 0.15 70);
+  --color-secondary-content: oklch(12% 0.025 220);
+
+  /* Pearl Aqua #94d2bd */
+  --color-accent: oklch(82% 0.06 168);
+  --color-accent-content: oklch(12% 0.025 220);
+
+  /* dark blue-teal neutral */
+  --color-neutral: oklch(18% 0.03 215);
+  --color-neutral-content: oklch(70% 0.05 168);
+
+  /* Pearl Aqua #94d2bd */
+  --color-info: oklch(82% 0.06 168);
+  --color-info-content: oklch(12% 0.025 220);
+
+  /* Dark Cyan #0a9396 */
+  --color-success: oklch(58% 0.09 195);
+  --color-success-content: oklch(12% 0.025 220);
+
+  /* Golden Orange #ee9b00 */
+  --color-warning: oklch(74% 0.15 70);
+  --color-warning-content: oklch(12% 0.025 220);
+
+  /* Brown Red #9b2226 */
+  --color-error: oklch(40% 0.15 25);
+  --color-error-content: oklch(89% 0.06 90);
 }
 
 /* sharp font rendering */
@@ -51,26 +353,183 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* cool scrollbar */
-::-webkit-scrollbar {
+/* monochrome scrollbar — pitch */
+[data-theme="monochrome-black"] ::-webkit-scrollbar {
   width: 6px;
 }
-::-webkit-scrollbar-track {
+[data-theme="monochrome-black"] ::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background: oklch(25% 0.01 230);
+[data-theme="monochrome-black"] ::-webkit-scrollbar-thumb {
+  /* Graphite #393939 */
+  background: oklch(30% 0 0);
   border-radius: 3px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: oklch(35% 0.02 230);
+[data-theme="monochrome-black"] ::-webkit-scrollbar-thumb:hover {
+  /* Charcoal #555555 */
+  background: oklch(42% 0 0);
 }
 
-/* range slider fill */
-input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+/* monochrome scrollbar — moonlight */
+[data-theme="monochrome-white"] ::-webkit-scrollbar {
+  width: 6px;
+}
+[data-theme="monochrome-white"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="monochrome-white"] ::-webkit-scrollbar-thumb {
+  /* Silver #c6c6c6 */
+  background: oklch(82% 0 0);
+  border-radius: 3px;
+}
+[data-theme="monochrome-white"] ::-webkit-scrollbar-thumb:hover {
+  /* Silver #aaaaaa */
+  background: oklch(73% 0 0);
+}
+
+/* soft scrollbar — peach */
+[data-theme="peach"] ::-webkit-scrollbar {
+  width: 6px;
+}
+[data-theme="peach"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="peach"] ::-webkit-scrollbar-thumb {
+  /* Almond Silk #fcd5ce */
+  background: oklch(80% 0.04 25);
+  border-radius: 3px;
+}
+[data-theme="peach"] ::-webkit-scrollbar-thumb:hover {
+  /* Powder Blush #fec5bb */
+  background: oklch(70% 0.06 25);
+}
+
+/* warm scrollbar — warm-earth */
+[data-theme="warm-earth"] ::-webkit-scrollbar {
+  width: 6px;
+}
+[data-theme="warm-earth"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="warm-earth"] ::-webkit-scrollbar-thumb {
+  /* Stone Brown #5c4d3c */
+  background: oklch(43% 0.035 65);
+  border-radius: 3px;
+}
+[data-theme="warm-earth"] ::-webkit-scrollbar-thumb:hover {
+  /* Coffee Bean #6f523b */
+  background: oklch(47% 0.05 58);
+}
+
+/* warm scrollbar — warm-earth-light */
+[data-theme="warm-earth-light"] ::-webkit-scrollbar {
+  width: 6px;
+}
+[data-theme="warm-earth-light"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="warm-earth-light"] ::-webkit-scrollbar-thumb {
+  /* Warm Beige #d4c0aa */
+  background: oklch(82% 0.035 55);
+  border-radius: 3px;
+}
+[data-theme="warm-earth-light"] ::-webkit-scrollbar-thumb:hover {
+  /* Soft Sand #c4b09a */
+  background: oklch(76% 0.04 55);
+}
+
+/* range slider fill — pitch */
+[data-theme="monochrome-black"] input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
   background: linear-gradient(
     to right,
-    oklch(86% 0.02 230) var(--range-fill),
-    oklch(18% 0.005 230) var(--range-fill)
+    oklch(82% 0 0) var(--range-fill),
+    oklch(18% 0 0) var(--range-fill)
+  );
+}
+
+/* range slider fill — moonlight */
+[data-theme="monochrome-white"] input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    oklch(30% 0 0) var(--range-fill),
+    oklch(91% 0 0) var(--range-fill)
+  );
+}
+
+/* teal scrollbar — forest */
+[data-theme="forest"] ::-webkit-scrollbar {
+  width: 6px;
+}
+[data-theme="forest"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="forest"] ::-webkit-scrollbar-thumb {
+  background: oklch(40% 0.04 210);
+  border-radius: 3px;
+}
+[data-theme="forest"] ::-webkit-scrollbar-thumb:hover {
+  /* Stormy Teal #287271 */
+  background: oklch(50% 0.06 190);
+}
+
+/* range slider fill — peach */
+[data-theme="peach"] input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    oklch(55% 0.12 35) var(--range-fill),
+    oklch(93% 0.022 22) var(--range-fill)
+  );
+}
+
+/* range slider fill — warm-earth */
+[data-theme="warm-earth"] input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    oklch(59% 0.11 50) var(--range-fill),
+    oklch(35% 0.01 175) var(--range-fill)
+  );
+}
+
+/* range slider fill — warm-earth-light */
+[data-theme="warm-earth-light"] input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    oklch(55% 0.11 50) var(--range-fill),
+    oklch(88% 0.03 60) var(--range-fill)
+  );
+}
+
+/* range slider fill — forest */
+[data-theme="forest"] input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    oklch(63% 0.09 178) var(--range-fill),
+    oklch(38% 0.04 215) var(--range-fill)
+  );
+}
+
+/* oceanic scrollbar */
+[data-theme="oceanic"] ::-webkit-scrollbar {
+  width: 6px;
+}
+[data-theme="oceanic"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="oceanic"] ::-webkit-scrollbar-thumb {
+  /* Dark Teal #005f73 */
+  background: oklch(42% 0.08 210);
+  border-radius: 3px;
+}
+[data-theme="oceanic"] ::-webkit-scrollbar-thumb:hover {
+  /* Dark Cyan #0a9396 */
+  background: oklch(50% 0.08 200);
+}
+
+/* range slider fill — oceanic */
+[data-theme="oceanic"] input[type="range"][style*="--range-fill"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    oklch(58% 0.09 195) var(--range-fill),
+    oklch(25% 0.05 215) var(--range-fill)
   );
 }
