@@ -38,10 +38,10 @@ No server required. Everything runs locally on your machine.
 
 An API key from **at least one** of the following AI providers is required for embedding generation and relationship extraction:
 
-| Provider | Key | Usage |
-|----------|-----|-------|
-| [OpenAI](https://platform.openai.com/api-keys) | `sk-...` | Embeddings + Relationship extraction |
-| [Google Gemini](https://aistudio.google.com/apikey) | `AI...` | Embeddings + Relationship extraction |
+| Provider                                            | Key      | Usage                                |
+| --------------------------------------------------- | -------- | ------------------------------------ |
+| [OpenAI](https://platform.openai.com/api-keys)      | `sk-...` | Embeddings + Relationship extraction |
+| [Google Gemini](https://aistudio.google.com/apikey) | `AI...`  | Embeddings + Relationship extraction |
 
 > Both are **paid APIs**. Configure your key in **Settings** after installation.
 
@@ -53,26 +53,28 @@ Download the latest release for your platform:
 
 **[GitHub Releases](https://github.com/Cognito-Distillery/moonshine/releases/latest)**
 
-| Platform | File |
-|----------|------|
-| **Linux** | `.AppImage` / `.deb` |
-| **macOS** | `.dmg` |
-| **Windows** | `.msi` / `.exe` |
+| Platform    | File                 |
+| ----------- | -------------------- |
+| **Linux**   | `.AppImage` / `.deb` |
+| **macOS**   | `.dmg`               |
+| **Windows** | `.msi` / `.exe`      |
 
-> **macOS:** If you see *"moonshine is damaged and can't be opened"*, run this in Terminal:
+> **macOS:** If you see _"moonshine is damaged and can't be opened"_, run this in Terminal:
+>
 > ```bash
 > xattr -cr /Applications/moonshine.app
 > ```
+>
 > This removes the quarantine flag that macOS applies to unsigned apps.
 
 ### Data Location
 
 All data is stored in a single SQLite file:
 
-| Platform | Path |
-|----------|------|
-| **Linux** | `~/.local/share/com.moonshine.app/moonshine.db` |
-| **macOS** | `~/Library/Application Support/com.moonshine.app/moonshine.db` |
+| Platform    | Path                                                             |
+| ----------- | ---------------------------------------------------------------- |
+| **Linux**   | `~/.local/share/com.moonshine.app/moonshine.db`                  |
+| **macOS**   | `~/Library/Application Support/com.moonshine.app/moonshine.db`   |
 | **Windows** | `C:\Users\{user}\AppData\Roaming\com.moonshine.app\moonshine.db` |
 
 ---
@@ -83,11 +85,11 @@ All data is stored in a single SQLite file:
 
 Turn a thought into a mash. Choose one of four types:
 
-| Type | Description |
-|------|-------------|
-| **Decision** | A finalized decision |
-| **Problem** | An issue that needs resolution |
-| **Insight** | A discovered insight |
+| Type         | Description                      |
+| ------------ | -------------------------------- |
+| **Decision** | A finalized decision             |
+| **Problem**  | An issue that needs resolution   |
+| **Insight**  | A discovered insight             |
 | **Question** | A question that needs discussion |
 
 ### 2. Mash Tun
@@ -112,11 +114,11 @@ Recent natural-language searches are cached to avoid redundant API calls.
 A small floating window for capturing thoughts instantly without switching to the main app.
 The app stays in the **system tray** — close the main window and it keeps running in the background.
 
-| Platform | Shortcut | Setup |
-|----------|----------|-------|
-| **macOS** | `Cmd+Shift+M` | Works out of the box |
-| **Windows** | `Ctrl+Shift+M` | Works out of the box |
-| **Linux (X11)** | `Ctrl+Shift+M` | Works out of the box |
+| Platform            | Shortcut           | Setup                                              |
+| ------------------- | ------------------ | -------------------------------------------------- |
+| **macOS**           | `Cmd+Shift+M`      | Works out of the box                               |
+| **Windows**         | `Ctrl+Shift+M`     | Works out of the box                               |
+| **Linux (X11)**     | `Ctrl+Shift+M`     | Works out of the box                               |
 | **Linux (Wayland)** | Any key you choose | Bind a DBus command in your compositor (see below) |
 
 ### Linux Wayland Setup
@@ -138,6 +140,7 @@ Ctrl+Shift+M { spawn "dbus-send" "--session" "--type=method_call" "--dest=com.mo
 ```
 
 Then reload: `niri msg action reload-config`
+
 </details>
 
 <details>
@@ -148,6 +151,7 @@ Add to `hyprland.conf`:
 ```
 bind = CTRL SHIFT, M, exec, dbus-send --session --type=method_call --dest=com.moonshine.App /com/moonshine/App com.moonshine.App.ToggleFloatingMemo
 ```
+
 </details>
 
 <details>
@@ -159,6 +163,7 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/or
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/moonshine/ command "dbus-send --session --type=method_call --dest=com.moonshine.App /com/moonshine/App com.moonshine.App.ToggleFloatingMemo"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/moonshine/ binding '<Ctrl><Shift>m'
 ```
+
 </details>
 
 <details>
@@ -199,7 +204,7 @@ See **[Development Guide](docs/development_guide.md)** for tech stack, build ins
 
 ## License
 
-[MIT](LICENSE)
+[GPL-2](LICENSE)
 
 ---
 
